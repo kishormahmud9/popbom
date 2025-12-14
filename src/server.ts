@@ -7,6 +7,7 @@ import config from "./app/config";
 import jwt from "jsonwebtoken";
 import { ChatService } from "./module/Chat/chat.service";
 import { Conversation } from "./module/Chat/conversation.model";
+import "dotenv/config";
 
 let server: HttpServer;
 let io: IOServer;
@@ -153,13 +154,13 @@ main();
 // graceful shutdown handlers (keep yours)
 process.on("unhandledRejection", (error) => {
   console.log(`unhandledRejection is detected, shutting down the server`);
-  if (server) {
-    server.close(() => {
-      process.exit(1);
-    });
-  } else {
-    process.exit(1);
-  }
+  // if (server) {
+  //   server.close(() => {
+  //     process.exit(1);
+  //   });
+  // } else {
+  //   process.exit(1);
+  // }
 });
 
 process.on("uncaughtException", (error) => {

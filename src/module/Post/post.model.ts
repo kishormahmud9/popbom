@@ -3,11 +3,11 @@ import { IPost } from "./post.interface";
 
 const postSchema = new Schema<IPost>(
   {
-    title: { type: String, required: true },
+    title: { type: String },
     body: { type: String },
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     challengeId: { type: Schema.Types.ObjectId, ref: 'Challenge'},
-    videoUrl: { type: String },
+    videoUrl: { type: String , required:true},
     musicUrl: { type: String },
     location: { type: String },
     status: { type: String, enum: ['active', 'banned', 'hide'], default: 'active' },

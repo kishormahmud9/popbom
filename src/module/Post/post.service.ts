@@ -19,6 +19,15 @@ import AppError from "../../app/errors/AppError";
 import status from "http-status";
 
 const createPost = async (data: Partial<CreatePostInput>) => {
+  // Validate required fields
+  if (!data.videoUrl) {
+    throw new AppError(status.BAD_REQUEST, "Video URL is required");
+  }
+  
+  if (!data.postType) {
+    throw new AppError(status.BAD_REQUEST, "Post type is required");
+  }
+
   // 1. Create core post
   const post = await Post.create({
     title: data.title,

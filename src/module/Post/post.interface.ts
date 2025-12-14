@@ -5,11 +5,11 @@ export type TPostAudience = 'everyone' | 'follower';
 export type TPostType = 'reels' | 'challenges' | 'story';
 
 export interface IPost {
-  title: string;
+  title?: string;
   body?: string;
   authorId: Schema.Types.ObjectId;
   challengeId?:Schema.Types.ObjectId;
-  videoUrl?: string;
+  videoUrl: string;
   musicUrl?: string;
   location?: string;
   status: TPostStatus;
@@ -20,11 +20,11 @@ export interface IPost {
 }
 
 export interface CreatePostInput {
-  title: string;
+  title?: string;
   body?: string;
   authorId: string;
   challengeId?: string;
-  videoUrl?: string;
+  videoUrl: string;
   musicUrl?: string;
   location?: string;
   postType: TPostType;

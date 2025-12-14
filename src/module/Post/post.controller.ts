@@ -6,14 +6,33 @@ import { JwtPayload } from 'jsonwebtoken';
 
 
 const createPost = catchAsync(async (req, res) => {
-  const fileUrl = req.file?.path;
+  // Validate file upload
+  if (!req.file) {
+    return sendResponse(res, {
+      statusCode: status.BAD_REQUEST,
+      success: false,
+      message: 'Video file is required',
+      data: null
+    });
+  }
 
-  console.log("cloudinary url ",fileUrl);
+  const fileUrl = req.file.path || (req.file as any)?.secure_url;
+
+  if (!fileUrl) {
+    return sendResponse(res, {
+      statusCode: status.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: 'Failed to upload video. Cloudinary error: cloud_name is disabled. Please check your CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env file.',
+      data: null
+    });
+  }
+
+  console.log("cloudinary url ", fileUrl);
 
   const data = { 
     ...req.body, 
     authorId: req.user?.id,
-    videoUrl:fileUrl 
+    videoUrl: fileUrl 
   };
 
   if(typeof data.tagPeople ==='string'){
@@ -24,11 +43,26 @@ const createPost = catchAsync(async (req, res) => {
     }
   }
   
-    if (typeof data.hashTagIds === 'string') {
+  // Handle hashTagIds (note: field name should be hashTagIds, not hashTagNames)
+  if (typeof data.hashTagIds === 'string') {
     try {
       data.hashTagIds = JSON.parse(data.hashTagIds);
     } catch {
       data.hashTagIds = [];
+    }
+  }
+  
+  // Also check for hashTagNames (common mistake) and convert if needed
+  if (req.body.hashTagNames && !data.hashTagIds) {
+    console.warn('hashTagNames field detected. Please use hashTagIds instead.');
+    if (typeof req.body.hashTagNames === 'string') {
+      try {
+        data.hashTagIds = JSON.parse(req.body.hashTagNames);
+      } catch {
+        data.hashTagIds = [];
+      }
+    } else if (Array.isArray(req.body.hashTagNames)) {
+      data.hashTagIds = req.body.hashTagNames;
     }
   }
 

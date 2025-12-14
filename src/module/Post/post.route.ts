@@ -3,10 +3,11 @@ import { PostController } from './post.controller';
 import auth from '../../app/middleware/auth';
 import { USER_ROLE } from '../User/user.constant';
 import upload from '../../app/middleware/upload';
+import { handleUploadError } from '../../app/middleware/upload.middleware';
 
 const router = Router();
 
-router.post('/', auth(USER_ROLE.user, USER_ROLE.admin), upload.single("video"),PostController.createPost);  //ok
+router.post('/', auth(USER_ROLE.user, USER_ROLE.admin), upload.single("video"),handleUploadError, PostController.createPost);  //ok
 router.get('/my-posts', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getLoggedInUserPosts); //ok
 router.get('/user-posts/:userId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getUserPostsByUserId);
 router.get('/tagged/:userId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getTaggedPosts); //ok
