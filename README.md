@@ -1,3 +1,7 @@
+{
+    "email":"admin@gmail.com",
+    "password":"Admin@12345"
+}
 # Pop Bom API Documentation
 
 A comprehensive social media platform API built with Node.js, Express, TypeScript, and MongoDB. This API supports features like posts, stories, challenges, chat, reactions, comments, and more.

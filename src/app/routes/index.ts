@@ -20,7 +20,7 @@ import { ReportRoutes } from "../../module/Report/report.route";
 import { ChatRoutes } from "../../module/Chat/chat.route";
 import { PointRoutes } from "../../module/Point/point.route";
 import { GiftRoutes } from "../../module/Gift/gift.route";
-
+import { AdminAuthRoutes } from "../../module/AdminAuth/adminAuth.route";
 
 const router = Router();
 
@@ -112,6 +112,10 @@ const moduleRoutes =[
     {
         path:'/gift',
         route:GiftRoutes
+    },
+    {
+        path:'/admin',
+        route:AdminAuthRoutes
     }
 ];
 
