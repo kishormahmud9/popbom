@@ -21,6 +21,7 @@ import { ChatRoutes } from "../../module/Chat/chat.route";
 import { PointRoutes } from "../../module/Point/point.route";
 import { GiftRoutes } from "../../module/Gift/gift.route";
 import { AdminAuthRoutes } from "../../module/AdminAuth/adminAuth.route";
+import { AdminRoutes } from "../../module/Admin/admin.route";
 
 const router = Router();
 
@@ -114,8 +115,12 @@ const moduleRoutes =[
         route:GiftRoutes
     },
     {
-        path:'/admin',
+        path:'/auth/admin',
         route:AdminAuthRoutes
+    },
+    {
+        path:'/admin',
+        route:AdminRoutes
     }
 ];
 
