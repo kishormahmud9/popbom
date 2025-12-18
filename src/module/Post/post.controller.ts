@@ -27,7 +27,7 @@ const createPost = catchAsync(async (req, res) => {
     });
   }
 
-  console.log("cloudinary url ", fileUrl);
+
 
   const data = { 
     ...req.body, 

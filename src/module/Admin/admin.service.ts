@@ -35,8 +35,36 @@ const getAllReports = async () => {
 
 const getAdminProfile = async (id: string) => {
     const admin = await Admin.findById(id).select('name email role image createdAt updatedAt').lean();
-    if(!admin) throw new AppError(status.NOT_FOUND, 'Admin not found');
+    if (!admin) throw new AppError(status.NOT_FOUND, 'Admin not found');
     return admin;
+};
+
+const updateAdminProfile = async (id: string, body: any) => {
+    const admin = await Admin.findByIdAndUpdate(
+        id,
+        { $set: body },
+        { new: true, runValidators: true }
+    )
+        .select("name email role image createdAt updatedAt")
+        .lean();
+
+    if (!admin) {
+        throw new AppError(status.NOT_FOUND, "Admin not found");
+    }
+
+    return admin;
+};
+
+const changeAdminPassword = async (id: string, body: any) => {
+    const admin = await Admin.findById(id).select('+password');
+    if(!admin) throw new AppError(status.NOT_FOUND, 'Admin not found');
+    const isPasswordMatched = await Admin.isPasswordMatched(body.currentPassword, admin.password);
+    if(!isPasswordMatched) throw new AppError(status.FORBIDDEN, 'Current password is incorrect');
+    const isSame = await Admin.isPasswordMatched(body.newPassword, admin.password);
+    if(isSame) throw new AppError(status.BAD_REQUEST, 'New password must be different from current password');
+    admin.password = body.newPassword;
+    await admin.save();
+    return 'Password changed successfully';
 };
 
 export const AdminService = {
@@ -44,4 +72,6 @@ export const AdminService = {
     getAllUsers,
     getAllReports,
     getAdminProfile,
+    updateAdminProfile,
+    changeAdminPassword,
 };
