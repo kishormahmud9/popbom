@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import AppError from "../../app/errors/AppError";
 import status from "http-status";
 import { StoryReply } from "./reply.model";
+import { ChatService } from "../Chat/chat.service";
 
 interface IReplyPayload {
     storyId: Types.ObjectId | string;
@@ -13,7 +14,26 @@ interface IReplyPayload {
 
 // Create a reply
 const createReply = async (data: IReplyPayload) => {
-    return StoryReply.create(data);
+    const result = await StoryReply.create(data);
+
+    // Send message to author's inbox
+    if (result) {
+        const conversation = await ChatService.findOrCreateConversation(
+            data.replyUserId.toString(),
+            data.authorUserId.toString()
+        );
+
+        if (conversation) {
+            await ChatService.createMessage({
+                conversationId: conversation._id.toString(),
+                senderId: data.replyUserId.toString(),
+                receiverId: data.authorUserId.toString(),
+                text: data.replyMessage,
+            });
+        }
+    }
+
+    return result;
 };
 
 // Get replies for a story
