@@ -8,7 +8,7 @@ const app:Application = express()
 
 // parsers
 app.use(express.json());
-app.use(cors({origin: ['http://localhost:5173',"http://172.252.13.97:5000"], credentials:true}))
+app.use(cors({origin: ['http://localhost:3001',"http://172.252.13.97:5000","http://localhost:3000","http://localhost:3003"], credentials:true}))
 
 // application routes
 app.use('/api', router);
