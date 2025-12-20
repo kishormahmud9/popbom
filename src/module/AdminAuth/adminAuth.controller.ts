@@ -9,6 +9,13 @@ const loginAdmin = catchAsync(async (req, res) => {
     const result = await AdminAuthService.login(req.body);
 
     const { accessToken, refreshToken } = result;
+    
+    res.cookie('accessToken', accessToken, {
+        secure: config.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
     res.cookie('refreshToken', refreshToken, {
         secure: config.NODE_ENV === 'production',
         httpOnly: true,
