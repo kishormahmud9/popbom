@@ -28,7 +28,7 @@ const findOrCreateConversation = async (userA: string, userB: string) => {
 const createMessage = async (payload: {
   conversationId: string;
   senderId: string;
-  receiverId:string;
+  receiverId: string;
   text?: string;
   mediaUrl?: string | null;
 }) => {
@@ -64,7 +64,14 @@ const createMessage = async (payload: {
     await session.commitTransaction();
     session.endSession();
 
-    return await Message.findById(msg._id).populate("senderId receiverId", "username");
+    return await Message.findById(msg._id).populate({
+      path: "senderId receiverId",
+      select: "username",
+      populate: {
+        path: "userDetails",
+        select: "photo",
+      },
+    });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -82,7 +89,14 @@ const getMessages = async (conversationId: string, limit = 50, before?: string) 
   const messages = await Message.find(filter)
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate("senderId", "username")
+    .populate({
+      path: "senderId",
+      select: "username",
+      populate: {
+        path: "userDetails",
+        select: "photo",
+      },
+    })
     .lean();
 
   // return in ascending order for UI convenience
@@ -103,6 +117,10 @@ const getConversationsForUser = async (userId: string) => {
     .populate({
       path: "participants",
       select: "username",
+      populate: {
+        path: "userDetails",
+        select: "photo",
+      },
     })
     .lean();
 
