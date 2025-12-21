@@ -1,6 +1,7 @@
 import mongoose, { Types } from "mongoose";
 import { Conversation } from "./conversation.model";
 import { Message } from "./message.model";
+import { NotificationService } from "../Notification/notification.service";
 /**
  * ChatService (hybrid pattern)
  * - create/find conversations
@@ -60,6 +61,15 @@ const createMessage = async (payload: {
       },
       { session }
     );
+
+    await NotificationService.sendNotification({
+      userId: payload.receiverId,
+      senderId: payload.senderId,
+      type: 'message',
+      message: payload.text || 'sent you a message',
+      linkType: 'chat',
+      linkId: payload.conversationId,
+    });
 
     await session.commitTransaction();
     session.endSession();

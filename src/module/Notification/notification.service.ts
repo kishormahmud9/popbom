@@ -1,60 +1,64 @@
 import { Types } from "mongoose";
 import { Post } from "../Post/post.model";
 import { Notification } from "./notification.model";
-import { ICommentNotificationPayload, INotificationPayload } from "./notification.interface";
+import { INotificationPayload } from "./notification.interface";
 
 
 
-const createReactionNotification = async (data: INotificationPayload) => {
+const sendNotification = async (payload: INotificationPayload) => {
   
-  const post = await Post.findById(data.postId);
-
-  if (!post) throw new Error("Post not found");
-
-  const postOwnerId = post.authorId.toString();
-
-  // Avoid notifying the user for their own action
-  if (postOwnerId === data.userId) return;
-
+  if (payload.userId.toString() === payload.senderId.toString()) return;
 
   const notification = await Notification.create({
-    userId: postOwnerId,        // recipient
-    type: "reaction",
-    postId: data.postId,
-    reactedBy: data.userId,
-    message: `User reacted with ${data.reaction} on your post.`,
+    ...payload,
     isRead: false,
   });
 
   return notification;
 };
 
-const createCommentNotification = async (data: ICommentNotificationPayload) =>{
+
+const createReactionNotification = async (data: { postId: string, userId: string, reaction: string }) => {
   const post = await Post.findById(data.postId);
-  if(!post) throw new Error("Post not found");
+  if (!post) throw new Error("Post not found");
 
-  const postOwnerId = post.authorId.toString();
-  if(postOwnerId.toString() === data.userId.toString()){
-    return;
-  }
-
-  const notification = await Notification.create({
-    userId:postOwnerId,
-    type:'comment',
-    postId:data.postId as Types.ObjectId,
-    reactedBy:data.userId as Types.ObjectId,
-    message:`Someone commented on your post`,
-    isRead:false
+  return await sendNotification({
+    userId: post.authorId.toString(),
+    senderId: data.userId,
+    type: "reaction",
+    message: `reacted with ${data.reaction} on your post`,
+    linkType: "post",
+    linkId: data.postId,
   });
-  return notification;
-}
+};
+
+const createCommentNotification = async (data: { postId: string, userId: string }) => {
+  const post = await Post.findById(data.postId);
+  if (!post) throw new Error("Post not found");
+
+  return await sendNotification({
+    userId: post.authorId.toString(),
+    senderId: data.userId,
+    type: "comment",
+    message: `commented on your post`,
+    linkType: "post",
+    linkId: data.postId,
+  });
+};
 
 const getNotificationsForUser = async (userId: string) => {
-  return await Notification.find({ userId }).sort({ createdAt: -1 });
+  return await Notification.find({ userId })
+    .sort({ createdAt: -1 })
+    .populate("senderId", "username")
+    .populate({
+      path: "senderId",
+      populate: { path: "userDetails", select: "name photo" }
+    });
 };
 
 export const NotificationService = {
+  sendNotification,
   createReactionNotification,
   createCommentNotification,
-  getNotificationsForUser
+  getNotificationsForUser,
 };

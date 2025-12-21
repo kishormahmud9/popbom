@@ -5,8 +5,7 @@ import status from "http-status";
 import { NotificationService } from "./notification.service";
 
 const createNotification = catchAsync(async (req: Request, res: Response) => {
-  const payload = { ...req.body, userId: req.body.userId };
-  const result = await NotificationService.createReactionNotification(payload);
+  const result = await NotificationService.sendNotification(req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,

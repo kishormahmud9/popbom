@@ -2,10 +2,25 @@ import { TagPerson } from './tagPeople.model';
 import { ITagPerson } from './tagPeople.interface';
 import AppError from '../../app/errors/AppError';
 import status from 'http-status';
+import { NotificationService } from '../Notification/notification.service';
+import { Post } from '../Post/post.model';
 
 const tagPerson = async (payload: Partial<ITagPerson>) => {
   // create, unique index will prevent duplicates
   const tag = await TagPerson.create(payload);
+
+  if (tag) {
+    const post = await Post.findById(tag.postId);
+    await NotificationService.sendNotification({
+      userId: tag.userId as any,
+      senderId: post?.authorId as any, // The person who tagged them (usually the post author)
+      type: 'tag',
+      message: 'tagged you in a post',
+      linkType: 'post',
+      linkId: tag.postId as any,
+    });
+  }
+
   return tag;
 };
 

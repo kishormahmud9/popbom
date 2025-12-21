@@ -3,6 +3,8 @@ import { IChallenge, IChallengeResponse, IPopulatedParticipant } from "./challen
 import { Challenge } from "./challenge.model";
 import { ChallengeRule } from "../ChallengeRules/challengeRules.model";
 import { ChallengeParticipant } from "../ChallengeParticipant/participant.model";
+import { NotificationService } from "../Notification/notification.service";
+import { Follow } from "../Follow/follow.model";
 
 
 const attachChallengeRules = async (challenges: any[]) => {
@@ -49,21 +51,21 @@ const getParticipantsInfo = async (challengeIds: string[]) => {
 
   // Group participants by challengeId
   const grouped = participants.reduce((acc, participant) => {
-  const key = participant.challengeId.toString();
-  if (!acc[key]) acc[key] = [];
+    const key = participant.challengeId.toString();
+    if (!acc[key]) acc[key] = [];
 
-  // check if participant already exists
-  if (!acc[key].some(p => p._id === participant.participantId._id)) {
-    acc[key].push({
-      _id: participant.participantId._id,
-      username: participant.participantId.username,
-      name: participant.participantId.userDetails?.name || '',
-      photo: participant.participantId.userDetails?.photo || '',
-    });
-  }
+    // check if participant already exists
+    if (!acc[key].some(p => p._id === participant.participantId._id)) {
+      acc[key].push({
+        _id: participant.participantId._id,
+        username: participant.participantId.username,
+        name: participant.participantId.userDetails?.name || '',
+        photo: participant.participantId.userDetails?.photo || '',
+      });
+    }
 
-  return acc;
-}, {} as Record<string, Array<{ _id: string; username: string; name: string; photo: string }>>);
+    return acc;
+  }, {} as Record<string, Array<{ _id: string; username: string; name: string; photo: string }>>);
 
   return grouped;
 };
@@ -95,11 +97,11 @@ const addParticipantCounts = async (challenges: any[]): Promise<IChallengeRespon
     rules: c.rules || [],
     author: c.authorId
       ? {
-          _id: c.authorId._id,
-          username: c.authorId.username,
-          photo: c.authorId.userDetails?.photo || "",
-          name: c.authorId.userDetails?.name || ""
-        }
+        _id: c.authorId._id,
+        username: c.authorId.username,
+        photo: c.authorId.userDetails?.photo || "",
+        name: c.authorId.userDetails?.name || ""
+      }
       : null,
   })) as IChallengeResponse[];
 };
@@ -142,6 +144,19 @@ const createChallenge = async (
     await session.commitTransaction();
     session.endSession();
 
+    // 2.5️⃣ Notify followers about new challenge
+    const followers = await Follow.find({ followedUserId: data.authorId, status: 'follow' });
+    for (const follower of followers) {
+      await NotificationService.sendNotification({
+        userId: follower.followingUserId as any,
+        senderId: data.authorId as any,
+        type: 'challenge',
+        message: `created a new challenge: ${data.challengeName}`,
+        linkType: 'challenge',
+        linkId: challenge._id as any,
+      });
+    }
+
     // 3️⃣ Fetch rules only (NO AUTHOR POPULATE)
     const rules = await ChallengeRule.find({
       challengeId: challenge._id,
@@ -163,18 +178,18 @@ const createChallenge = async (
   }
 };
 
-const getAllChallenges = async (userId:string): Promise<IChallengeResponse[]> => {
-  let challenges:any[] = await Challenge.find({ 
+const getAllChallenges = async (userId: string): Promise<IChallengeResponse[]> => {
+  let challenges: any[] = await Challenge.find({
     authorId: { $ne: userId },
-     challengeEndDate: { $gte: new Date() }  //update here
+    challengeEndDate: { $gte: new Date() }  //update here
   })
     .populate({
-        path:'authorId',
-        select:'_id username',
-        populate:{
-            path:'userDetails',
-            select:'photo name',
-        }
+      path: 'authorId',
+      select: '_id username',
+      populate: {
+        path: 'userDetails',
+        select: 'photo name',
+      }
     }).lean();
 
   challenges = await addParticipantCounts(challenges);
@@ -189,14 +204,14 @@ const getMyChallenges = async (userId: string) => {
     authorId: new mongoose.Types.ObjectId(userId),
   })
     .populate({
-        path:'authorId',
-        select:'_id username',
-        populate: { 
-            path:'userDetails', 
-            select:'name photo'
-        }
+      path: 'authorId',
+      select: '_id username',
+      populate: {
+        path: 'userDetails',
+        select: 'name photo'
+      }
     })
-    .sort({ createdAt:-1})
+    .sort({ createdAt: -1 })
     .lean();
 
   return await addParticipantCounts(challenges);
@@ -210,17 +225,17 @@ const getParticipantChallenges = async (userId: string) => {
     .populate({
       path: "challengeId",
       populate: {
-        path: "authorId", 
+        path: "authorId",
         select: "_id username",
-        populate:{ path: 'userDetails', select:'name photo'}
-     },
+        populate: { path: 'userDetails', select: 'name photo' }
+      },
     })
     .sort({ createdAt: -1 }).lean<IPopulatedParticipant[]>();
 
- const challenges = participantDocs
-  .map((p) => p.challengeId)
-  .filter((c) => c !== null)
-  .filter((c, i, arr) => arr.findIndex(ch => ch._id.toString() === c._id.toString()) === i);
+  const challenges = participantDocs
+    .map((p) => p.challengeId)
+    .filter((c) => c !== null)
+    .filter((c, i, arr) => arr.findIndex(ch => ch._id.toString() === c._id.toString()) === i);
 
 
   return await addParticipantCounts(challenges);
@@ -252,23 +267,23 @@ const getChallengeById = async (challengeId: string) => {
 };
 
 
-const updateChallenge = async (id:string, data:Partial<IChallenge>)=>{
-    const res = await Challenge.findByIdAndUpdate(id, data, { new:true, runValidators: true});
-    return res;
+const updateChallenge = async (id: string, data: Partial<IChallenge>) => {
+  const res = await Challenge.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  return res;
 };
 
-const deleteChallenge = async(id:string)=>{
-    const res = await Challenge.findByIdAndDelete(id);
-    return res;
+const deleteChallenge = async (id: string) => {
+  const res = await Challenge.findByIdAndDelete(id);
+  return res;
 };
 
 
-export const ChallengeServices ={
-    createChallenge,
-    getAllChallenges,
-    getMyChallenges,
-    getParticipantChallenges,
-    updateChallenge,
-    deleteChallenge,
-    getChallengeById
+export const ChallengeServices = {
+  createChallenge,
+  getAllChallenges,
+  getMyChallenges,
+  getParticipantChallenges,
+  updateChallenge,
+  deleteChallenge,
+  getChallengeById
 }
