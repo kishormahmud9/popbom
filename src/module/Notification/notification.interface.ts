@@ -1,23 +1,23 @@
-import { Schema, Types } from "mongoose";
+import { Types } from "mongoose";
+
+export type TNotificationLinkType = 'chat' | 'post' | 'comment' | 'profile' | 'challenge' | 'gift' | 'follow';
 
 export interface INotification {
-  userId: Types.ObjectId; //recipient
+  userId: Types.ObjectId | string; 
+  senderId: Types.ObjectId | string; 
   type: string;
-  postId: Types.ObjectId;
-  reactedBy: Types.ObjectId;
-  message:string;
-  isRead:boolean;
+  message: string;
+  linkType?: TNotificationLinkType;
+  linkId?: Types.ObjectId | string;
+  isRead: boolean;
   createdAt?: Date;
 }
 
 export interface INotificationPayload {
-  postId: Types.ObjectId | string;
-  userId: Types.ObjectId | string; // who reacted
-  reaction: string;
-}
-
-export interface ICommentNotificationPayload {
-  postId: Types.ObjectId;
-  userId: Types.ObjectId;
-  comment:string;
+  userId: Types.ObjectId | string; 
+  senderId: Types.ObjectId | string; 
+  type: string;
+  message: string;
+  linkType?: TNotificationLinkType;
+  linkId?: Types.ObjectId | string;
 }

@@ -2,6 +2,7 @@ import { Follow } from './follow.model';
 import AppError from '../../app/errors/AppError';
 import status from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
+import { NotificationService } from '../Notification/notification.service';
 
 
 const toggleFollow = async (followingUserId: string, followedUserId: string) => {
@@ -11,11 +12,22 @@ const toggleFollow = async (followingUserId: string, followedUserId: string) => 
 
   const existing = await Follow.findOne({ followingUserId, followedUserId });
   if (existing) {
-     existing.status = existing.status === "follow"? "unfollow":"follow";
-     await existing.save();
+    existing.status = existing.status === "follow" ? "unfollow" : "follow";
+    await existing.save();
 
-    return { 
-      followed: existing.status ==='follow', 
+    if (existing.status === 'follow') {
+      await NotificationService.sendNotification({
+        userId: followedUserId,
+        senderId: followingUserId,
+        type: 'follow',
+        message: 'started following you',
+        linkType: 'profile',
+        linkId: followingUserId,
+      });
+    }
+
+    return {
+      followed: existing.status === 'follow',
       record: {
         followingUserId,
         followedUserId,
@@ -25,54 +37,63 @@ const toggleFollow = async (followingUserId: string, followedUserId: string) => 
   }
 
   const record = await Follow.create({
-     followingUserId, 
-     followedUserId, 
-     status:'follow' 
-    });
+    followingUserId,
+    followedUserId,
+    status: 'follow'
+  });
 
-    return { 
-      followed: true,
-      record:{
+  await NotificationService.sendNotification({
+    userId: followedUserId,
+    senderId: followingUserId,
+    type: 'follow',
+    message: 'started following you',
+    linkType: 'profile',
+    linkId: followingUserId,
+  });
+
+  return {
+    followed: true,
+    record: {
       followingUserId,
       followedUserId,
       status: 'follow',
-      } };
-  
+    }
+  };
 };
 
 const isFollowing = async (followerId: string, targetId: string) => {
-  const rec = await Follow.findOne({ 
-    followingUserId: followerId, 
+  const rec = await Follow.findOne({
+    followingUserId: followerId,
     followedUserId: targetId,
-    status:"follow"
-   });
+    status: "follow"
+  });
   return !!rec;
 };
 
 const getFollowers = async (userId: string) => {
-  const result = await Follow.find({ 
+  const result = await Follow.find({
     followedUserId: userId,
-    status:"follow" 
+    status: "follow"
   })
-  .sort({ createdAt: -1 })
-  .populate({
-  path: 'followingUserId',
-  select: 'username email',
-  populate: { 
-    path: 'userDetails', 
-    select: 'name photo' 
-  }
-})
+    .sort({ createdAt: -1 })
+    .populate({
+      path: 'followingUserId',
+      select: 'username email',
+      populate: {
+        path: 'userDetails',
+        select: 'name photo'
+      }
+    })
 
-  
+
   return result;
 };
 
 const getFollowing = async (userId: string) => {
-  const result = await Follow.find({ 
+  const result = await Follow.find({
     followingUserId: userId,
-    status:"follow"
-   })
+    status: "follow"
+  })
     .sort({ createdAt: -1 })
     .populate({
       path: 'followedUserId',
@@ -82,7 +103,7 @@ const getFollowing = async (userId: string) => {
         select: 'name photo'
       }
     });
-  
+
 
   return result;
 };

@@ -1,4 +1,5 @@
 import { Comment } from "./comment.model";
+import { Post } from "../Post/post.model";
 import { IComment } from "./comment.interface";
 import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../app/errors/AppError";
@@ -10,15 +11,34 @@ import { NotificationService } from "../Notification/notification.service";
 const createComment = async (data: Partial<IComment>) => {
 
   const comment = await Comment.create(data);
- 
-  const notification = await NotificationService.createCommentNotification({
-    postId: data.postId!,
-    userId: data.userId!,
-    comment: data.comment!
-  })
-  //  if(notification){
-  //     io.to(notification.userId.toString()).emit("newNotification",notification);
-  //   }
+
+  // 1) Notify post author
+  const post = await Post.findById(data.postId);
+  if (post) {
+    await NotificationService.sendNotification({
+      userId: post.authorId as any,
+      senderId: data.userId as any,
+      type: 'comment',
+      message: 'commented on your post',
+      linkType: 'post',
+      linkId: data.postId as any,
+    });
+  }
+
+  // 2) Notify parent comment author (if this is a reply)
+  if (data.parentCommentId) {
+    const parentComment = await Comment.findById(data.parentCommentId);
+    if (parentComment && parentComment.userId.toString() !== data.userId?.toString()) {
+      await NotificationService.sendNotification({
+        userId: parentComment.userId as any,
+        senderId: data.userId as any,
+        type: 'reply',
+        message: 'replied to your comment',
+        linkType: 'comment',
+        linkId: parentComment._id as any,
+      });
+    }
+  }
 
   return comment;
 };

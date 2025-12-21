@@ -17,4 +17,5 @@ export default {
 
   spotify_client_id: process.env.SPOTIFY_CLIENT_ID,
   spotify_client_secret: process.env.SPOTIFY_CLIENT_SECRET,
+  app_url: process.env.APP_URL || "http://172.252.13.97:5000",
 };

@@ -22,105 +22,110 @@ import { PointRoutes } from "../../module/Point/point.route";
 import { GiftRoutes } from "../../module/Gift/gift.route";
 import { AdminAuthRoutes } from "../../module/AdminAuth/adminAuth.route";
 import { AdminRoutes } from "../../module/Admin/admin.route";
+import { ShareProfileRoutes } from "../../module/ShareProfile/shareProfile.route";
 
 const router = Router();
 
-const moduleRoutes =[
+const moduleRoutes = [
     {
-        path:'/auth',
-        route:AuthRoutes
+        path: '/auth',
+        route: AuthRoutes
     },
     {
-        path:'/users',
-        route:UserRoutes
+        path: '/users',
+        route: UserRoutes
     },
     {
-        path:'/posts',
-        route:PostRoutes
+        path: '/posts',
+        route: PostRoutes
     },
     {
-        path:'/comments',
+        path: '/comments',
         route: CommentRoutes
     },
     {
-        path:'/post-reactions',
+        path: '/post-reactions',
         route: PostReactionRoutes
     },
     {
-        path:'/saved-posts',
-        route:SavedPostRoutes
+        path: '/saved-posts',
+        route: SavedPostRoutes
     },
     {
-        path:'/shared-posts',
-        route:SharedPostRoutes
+        path: '/shared-posts',
+        route: SharedPostRoutes
     },
     {
-        path:'/stories',
-        route:StoryRoutes
+        path: '/stories',
+        route: StoryRoutes
     },
     {
-        path:'/challenges',
-        route:ChallengeRoutes
+        path: '/challenges',
+        route: ChallengeRoutes
     },
     {
-        path:'/challenge-participants',
-        route:ChallengeParticipantRoutes
+        path: '/challenge-participants',
+        route: ChallengeParticipantRoutes
     },
     {
-        path:'/post-watch',
-        route:PostWatchRoutes
+        path: '/post-watch',
+        route: PostWatchRoutes
     },
     {
-        path:'/post-watch-count',
+        path: '/post-watch-count',
         route: PostWatchCountRoutes
     },
     {
-        path:'/story-reaction',
-        route:StoryReactionRoutes
+        path: '/story-reaction',
+        route: StoryReactionRoutes
     },
     {
-        path:'/story-reply',
-        route:StoryReplyRoutes
+        path: '/story-reply',
+        route: StoryReplyRoutes
     },
     {
-        path:'/follow',
-        route:FollowRoutes  
+        path: '/follow',
+        route: FollowRoutes
     },
     {
-        path:'/tag',
-        route:TagRoutes
+        path: '/tag',
+        route: TagRoutes
     },
     {
-        path:'/music',
-        route:MusicRoutes
+        path: '/music',
+        route: MusicRoutes
     },
     {
-        path:'/chat',
-        route:ChatRoutes
+        path: '/chat',
+        route: ChatRoutes
     },
     // {
     //     path:'/notification',
     //     route:NotificationRoutes
     // },
     {
-        path:'/report',
-        route:ReportRoutes
+        path: '/report',
+        route: ReportRoutes
     },
     {
-        path:'/point',
-        route:PointRoutes
+        path: '/point',
+        route: PointRoutes
     },
     {
-        path:'/gift',
-        route:GiftRoutes
+        path: '/gift',
+        route: GiftRoutes
     },
     {
-        path:'/auth/admin',
-        route:AdminAuthRoutes
+        path: '/auth/admin',
+        route: AdminAuthRoutes
     },
     {
-        path:'/admin',
-        route:AdminRoutes
+        path: '/admin',
+        route: AdminRoutes
+    },
+    {
+        path: '/share-profile',
+        route: ShareProfileRoutes
     }
 ];
 

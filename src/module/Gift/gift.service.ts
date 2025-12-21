@@ -3,6 +3,7 @@ import { IGift } from './gift.interface';
 import { Gift } from './gift.model';
 import { User } from '../User/user.modal';
 import { PointHistory } from '../Point/point.model';
+import { NotificationService } from '../Notification/notification.service';
 
 const GIFT_POINT_MAP: Record<string, number> = {
   coin: 100,
@@ -13,7 +14,7 @@ const GIFT_POINT_MAP: Record<string, number> = {
 };
 
 const sendGift = async (payload: Partial<IGift>) => {
-  
+
   if (!payload.authorId) throw new Error('authorId is required');
   if (!payload.userId) throw new Error('userId (recipient) is required');
   if (!payload.giftType) throw new Error('giftType is required');
@@ -56,6 +57,15 @@ const sendGift = async (payload: Partial<IGift>) => {
       }], { session });
     }
 
+    await NotificationService.sendNotification({
+      userId: createdGift.userId as any,
+      senderId: createdGift.authorId as any,
+      type: 'gift',
+      message: `sent you a ${createdGift.giftType}`,
+      linkType: 'gift',
+      linkId: createdGift._id as any,
+    });
+
     await session.commitTransaction();
     session.endSession();
 
@@ -64,7 +74,7 @@ const sendGift = async (payload: Partial<IGift>) => {
 
     return createdGift;
   } catch (err) {
-    try { await session.abortTransaction(); session.endSession(); } catch (e) {}
+    try { await session.abortTransaction(); session.endSession(); } catch (e) { }
     throw err;
   }
 };

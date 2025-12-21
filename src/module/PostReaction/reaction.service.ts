@@ -6,47 +6,46 @@ import { NotificationService } from "../Notification/notification.service";
 import { Post } from "../Post/post.model";
 
 interface IReactPayload {
-    postId: Types.ObjectId | string;
-    userId: Types.ObjectId | string;
-    reaction: TReactionType;
+  postId: Types.ObjectId | string;
+  userId: Types.ObjectId | string;
+  reaction: TReactionType;
 }
 
-const reactToPost = async (data: IReactPayload) =>{
+const reactToPost = async (data: IReactPayload) => {
 
   const post = await Post.findById(data.postId);
-  if(!post) throw new Error("Post not found");
+  if (!post) throw new Error("Post not found");
 
   const challengeId = post.challengeId;
 
-    const reaction = await PostReaction.findOneAndUpdate(
-      { postId: data.postId, userId:data.userId },
-      { reaction: data.reaction, challengeId },
-      { new: true, upsert:true, setDefaultsOnInsert:true }
-    );
+  const reaction = await PostReaction.findOneAndUpdate(
+    { postId: data.postId, userId: data.userId },
+    { reaction: data.reaction, challengeId },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
 
-    // save notification in DB
-    // const notification = await NotificationService.createReactionNotification({
-    //   postId:data.postId,
-    //   userId:data.userId,
-    //   reaction:data.reaction
-    // })
+  // save notification in DB
+  await NotificationService.sendNotification({
+    userId: post.authorId as any,
+    senderId: data.userId as any,
+    type: "reaction",
+    message: `reacted with ${data.reaction} on your post`,
+    linkType: "post",
+    linkId: data.postId as any,
+  });
 
-    // if(notification){
-    //   io.to(notification.userId.toString()).emit("newNotification",notification);
-    // }
-
-    return reaction;
+  return reaction;
 };
 
 const getReactionsByPost = async (postId: string) => {
   return await PostReaction.find({ postId }).populate({
-      path: 'userId',
-      select: 'username',
-      populate: { 
-        path: 'userDetails', 
-        select: 'name photo' 
-      }
-    });
+    path: 'userId',
+    select: 'username',
+    populate: {
+      path: 'userDetails',
+      select: 'name photo'
+    }
+  });
 };
 
 const getReactionsByUser = async (userId: string) => {
@@ -61,7 +60,7 @@ const deleteReaction = async (reactionId: string, userId: string) => {
 };
 
 const getTotalReactionsOfAUser = async (userId: string) => {
-  
+
   const posts = await Post.find({ authorId: userId }).select("_id").lean();
 
   const postIds = posts.map(p => p._id);
