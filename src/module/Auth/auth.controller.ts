@@ -49,24 +49,53 @@ const resetPassword = catchAsync(async (req, res) => {
 
 
 // login user
-const loginUser = catchAsync(async (req, res) =>{
-    const result = await AuthService.loginUser(req.body);
+// const loginUser = catchAsync(async (req, res) =>{
+//     const result = await AuthService.loginUser(req.body);
 
-    const { accessToken, refreshToken } = result;
+//     const { accessToken, refreshToken } = result;
 
-    res.cookie('refreshToken', refreshToken, {
-        secure: config.NODE_ENV ==='production',
-        httpOnly:true,
-        sameSite: config.NODE_ENV === 'production'? 'none':'lax',
-        maxAge: 1000*60*60*24*7,
-    });
+//     res.cookie('refreshToken', refreshToken, {
+//         secure: config.NODE_ENV ==='production',
+//         httpOnly:true,
+//         sameSite: config.NODE_ENV === 'production'? 'none':'lax',
+//         maxAge: 1000*60*60*24*7,
+//     });
 
-    sendResponse(res, {
-        statusCode:status.OK,
-        success:true,
-        message:'User is logged in successfully!',
-        data: { accessToken, refreshToken },
-    });
+//     sendResponse(res, {
+//         statusCode:status.OK,
+//         success:true,
+//         message:'User is logged in successfully!',
+//         data: { accessToken, refreshToken },
+//     });
+// });
+
+// login user
+const loginUser = catchAsync(async (req, res) => {
+  const result = await AuthService.loginUser(req.body);
+  const { accessToken, refreshToken } = result;
+
+  // ACCESS TOKEN (short lived)
+  res.cookie('accessToken', accessToken, {
+    secure: config.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 1000 * 60 * 15, // 15 minutes
+  });
+
+  // REFRESH TOKEN (long lived)
+  res.cookie('refreshToken', refreshToken, {
+    secure: config.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'User is logged in successfully!',
+    data: null, // token body-তে পাঠানো দরকার নাই
+  });
 });
 
 const registerUser = catchAsync(async (req, res) => {
