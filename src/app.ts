@@ -3,12 +3,14 @@ import cors from 'cors';
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import notFound from "./app/middleware/notFound";
 import router from "./app/routes";
+import cookieParser from "cookie-parser";
 
 const app:Application = express()
 
 // parsers
 app.use(express.json());
-app.use(cors({origin: ['http://localhost:3001',"http://172.252.13.97:5000","http://localhost:3000","http://localhost:3003"], credentials:true}))
+app.use(cookieParser());
+app.use(cors({origin: ['http://localhost:3001',"http://localhost:3000","http://localhost:3003"], credentials:true}))
 
 // application routes
 app.use('/api', router);
