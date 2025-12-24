@@ -39,8 +39,10 @@ const login = async (payload: TLoginAdmin) => {
   return {
     accessToken,
     refreshToken,
-    adminId: admin._id!.toString(),
-    email: admin.email,
+    user: {
+      adminId: admin._id!.toString(),
+      email: admin.email,
+    },
   };
 };
 
