@@ -11,6 +11,4 @@ router.post("/forgot-password", validateRequest(AdminAuthValidations.forgotPassw
 
 router.post("/verify-otp", validateRequest(AdminAuthValidations.verifyOTP), AdminAuthController.verifyOTP);
 
-
-
 export const AdminAuthRoutes = router;
