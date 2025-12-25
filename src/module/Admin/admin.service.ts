@@ -26,9 +26,22 @@ const getAllUsers = async () => {
 
 const getAllReports = async () => {
     const todaysReportsCount = await ReportModel.countDocuments({ createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)), $lte: new Date(new Date().setHours(23, 59, 59, 999)) } });
-    const reports = await ReportModel.find().select('userId email category shortTitle description status adminResponse isReadByAdmin createdAt').lean();
+
+    const onProgressReportsCount = await ReportModel.countDocuments({ status: 'in_progress' });
+    const completedReportsCount = await ReportModel.countDocuments({ status: 'resolved' });
+
+    const reports = await ReportModel.find()
+        .select('userId category shortTitle description status adminResponse isReadByAdmin createdAt')
+        .populate({
+            path: 'userId',
+            select: 'email name'
+        })
+        .lean();
+
     return {
         todaysReportsCount,
+        onProgressReportsCount,
+        completedReportsCount,
         reports,
     };
 };
@@ -57,11 +70,11 @@ const updateAdminProfile = async (id: string, body: any) => {
 
 const changeAdminPassword = async (id: string, body: any) => {
     const admin = await Admin.findById(id).select('+password');
-    if(!admin) throw new AppError(status.NOT_FOUND, 'Admin not found');
+    if (!admin) throw new AppError(status.NOT_FOUND, 'Admin not found');
     const isPasswordMatched = await Admin.isPasswordMatched(body.currentPassword, admin.password);
-    if(!isPasswordMatched) throw new AppError(status.FORBIDDEN, 'Current password is incorrect');
+    if (!isPasswordMatched) throw new AppError(status.FORBIDDEN, 'Current password is incorrect');
     const isSame = await Admin.isPasswordMatched(body.newPassword, admin.password);
-    if(isSame) throw new AppError(status.BAD_REQUEST, 'New password must be different from current password');
+    if (isSame) throw new AppError(status.BAD_REQUEST, 'New password must be different from current password');
     admin.password = body.newPassword;
     await admin.save();
     return 'Password changed successfully';
