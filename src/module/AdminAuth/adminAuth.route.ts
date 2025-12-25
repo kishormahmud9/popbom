@@ -11,4 +11,6 @@ router.post("/forgot-password", validateRequest(AdminAuthValidations.forgotPassw
 
 router.post("/verify-otp", validateRequest(AdminAuthValidations.verifyOTP), AdminAuthController.verifyOTP);
 
+router.post("/reset-password", validateRequest(AdminAuthValidations.resetPassword), AdminAuthController.resetPassword);
+
 export const AdminAuthRoutes = router;

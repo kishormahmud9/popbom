@@ -52,8 +52,18 @@ const verifyOTP = catchAsync(async (req, res) => {
   });
 });
 
+const resetPassword = catchAsync(async (req, res) => {
+  const { email, newPassword } = req.body;
+  const result = await AdminAuthService.resetPassword(email, newPassword);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'Password reset successfully',
+  });
+});
 export const AdminAuthController = {
   loginAdmin,
   forgotPassword,
   verifyOTP,
+  resetPassword,
 };

@@ -18,4 +18,10 @@ export const AdminAuthValidations = {
             otp: z.string({ required_error: 'OTP is required' }),
         })
     }),
+    resetPassword: z.object({
+        body: z.object({
+            email: z.string({ required_error: 'Email is required' }).email(),
+            newPassword: z.string({ required_error: 'New password is required' }).min(6),
+        })
+    }),
 };

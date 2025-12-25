@@ -8,6 +8,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { generateOTP } from '../../app/utils/generateOtp';
 import { sendEmail } from '../../app/utils/email';
 import status from 'http-status';
+import bcrypt from 'bcrypt';
 
 /* 🔹 Login Admin */
 const login = async (payload: TLoginAdmin) => {
@@ -93,8 +94,22 @@ const verifyOTP = async (email: string, otp: string) => {
   return true;
 };
 
+const resetPassword = async (email: string, newPassword: string) => {
+  const admin = await Admin.isAdminExistByEmail(email);
+  if (!admin) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Admin not found');
+  }
+  admin.password = newPassword;
+  admin.passwordResetOTP = null;
+  admin.passwordResetExpires = null;
+  admin.isOTPVerified = false;
+  await admin.save();
+  return true;
+};
+
 export const AdminAuthService = {
   login,
   forgotPassword,
   verifyOTP,
+  resetPassword,
 };
