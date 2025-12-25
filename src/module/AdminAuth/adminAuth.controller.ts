@@ -30,6 +30,30 @@ const loginAdmin = catchAsync(async (req, res) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  await AdminAuthService.forgotPassword(email);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'Password reset OTP sent to email',
+    data: null,
+  });
+});
+
+const verifyOTP = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+  const result = await AdminAuthService.verifyOTP(email, otp);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: 'OTP verified successfully',
+  });
+});
+
 export const AdminAuthController = {
   loginAdmin,
+  forgotPassword,
+  verifyOTP,
 };
