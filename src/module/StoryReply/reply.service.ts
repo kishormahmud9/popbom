@@ -23,6 +23,9 @@ const createReply = async (data: IReplyPayload) => {
             data.authorUserId.toString()
         );
 
+        console.log("conversation ", conversation);
+        console.log("data.replyUserId ", data);
+
         if (conversation) {
             await ChatService.createMessage({
                 conversationId: conversation._id.toString(),
@@ -40,8 +43,7 @@ const createReply = async (data: IReplyPayload) => {
 const getRepliesByStory = async (storyId: string) => {
     return StoryReply.find({ storyId })
         .sort({ createdAt: -1 })
-        .populate("replyUserId", "name photo")
-        .populate("authorUserId", "name");
+        
 };
 
 // Get replies by a user

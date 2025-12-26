@@ -17,6 +17,7 @@ import { SavedPost } from "../SavePost/savedPost.model";
 import { PostWatchCount } from "../PostWatchCount/watchCount.model";
 import AppError from "../../app/errors/AppError";
 import status from "http-status";
+import { CLIENT_RENEG_LIMIT } from "tls";
 
 const createPost = async (data: Partial<CreatePostInput>) => {
   // Validate required fields
@@ -83,6 +84,7 @@ const createPost = async (data: Partial<CreatePostInput>) => {
   }
   //handle postType ='story'
   if (post.postType === 'story') {
+    
     await Story.create({
       authorId: post.authorId,
       postId: post._id
