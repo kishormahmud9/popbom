@@ -78,8 +78,6 @@ const createPost = catchAsync(async (req, res) => {
 
 const getPost = catchAsync(async (req, res) => {
   const post = await PostServices.getPostById(req.params.id);
-  console.log(post);
-
   sendResponse(res, { 
     statusCode: status.OK,
     success: true,

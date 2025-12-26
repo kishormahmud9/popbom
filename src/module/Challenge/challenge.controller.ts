@@ -31,9 +31,8 @@ const createChallenge = catchAsync(async (req, res) => {
 
 //Get all challenges
 const getAllChallenges = catchAsync(async (req, res) => {
-  const user = req.user as JwtPayload;
-  const userId = user._id;
-  const result = await ChallengeServices.getAllChallenges(userId);
+
+  const result = await ChallengeServices.getAllChallenges();
 
   sendResponse(res, {
     statusCode: status.OK,

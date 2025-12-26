@@ -17,6 +17,6 @@ router.get('/:id', PostController.getPost);
 router.get('/',auth(USER_ROLE.user, USER_ROLE.admin), PostController.getFeed); //ok
 
 router.patch('/:id', auth(USER_ROLE.user, USER_ROLE.admin), PostController.updatePost);
-router.delete('/:postId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.deletePost);
+router.delete('/delete/:postId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.deletePost);
 
 export const PostRoutes = router;

@@ -110,8 +110,7 @@ const addParticipantCounts = async (challenges: any[]): Promise<IChallengeRespon
 const createChallenge = async (
   data: Partial<IChallenge & { rules?: string[] }>
 ) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+
 
   try {
     // 1️⃣ Create Challenge
@@ -126,7 +125,7 @@ const createChallenge = async (
           challengeEndDate: data.challengeEndDate,
         },
       ],
-      { session }
+
     );
 
     const challenge = challengeDocs[0];
@@ -138,11 +137,10 @@ const createChallenge = async (
         rule,
       }));
 
-      await ChallengeRule.insertMany(ruleDocs, { session });
+      await ChallengeRule.insertMany(ruleDocs);
     }
 
-    await session.commitTransaction();
-    session.endSession();
+
 
     // 2.5️⃣ Notify followers about new challenge
     const followers = await Follow.find({ followedUserId: data.authorId, status: 'follow' });
@@ -172,17 +170,12 @@ const createChallenge = async (
       participants: [],
     };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     throw error;
   }
 };
 
-const getAllChallenges = async (userId: string): Promise<IChallengeResponse[]> => {
-  let challenges: any[] = await Challenge.find({
-    authorId: { $ne: userId },
-    challengeEndDate: { $gte: new Date() }  //update here
-  })
+const getAllChallenges = async (): Promise<IChallengeResponse[]> => {
+  let challenges: any[] = await Challenge.find()
     .populate({
       path: 'authorId',
       select: '_id username',

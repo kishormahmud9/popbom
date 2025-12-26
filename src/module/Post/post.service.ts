@@ -23,7 +23,7 @@ const createPost = async (data: Partial<CreatePostInput>) => {
   if (!data.videoUrl) {
     throw new AppError(status.BAD_REQUEST, "Video URL is required");
   }
-  
+
   if (!data.postType) {
     throw new AppError(status.BAD_REQUEST, "Post type is required");
   }
@@ -74,17 +74,17 @@ const createPost = async (data: Partial<CreatePostInput>) => {
     );
   }
 
-  if(data.challengeId){
+  if (data.challengeId) {
     await ChallengeParticipant.create({
-      challengeId:new mongoose.Types.ObjectId(data.challengeId),
-      postId:post._id,
+      challengeId: new mongoose.Types.ObjectId(data.challengeId),
+      postId: post._id,
       participantId: new mongoose.Types.ObjectId(data.authorId)
     })
   }
   //handle postType ='story'
-  if(post.postType ==='story'){
+  if (post.postType === 'story') {
     await Story.create({
-      authorId:post.authorId,
+      authorId: post.authorId,
       postId: post._id
     })
   }
@@ -169,64 +169,64 @@ const attachPostCounts = async (posts: any[]) => {
 };
 
 
-  const getPostById = async (postId: string) => {
-    let post = await Post.findById(postId)
+const getPostById = async (postId: string) => {
+  let post = await Post.findById(postId)
     .populate({
       path: 'authorId',
       select: 'username email',
       populate: { path: 'userDetails', select: 'name photo' }
     }).lean();
 
-    if(!post) return null;
+  if (!post) return null;
 
-    post = (await attachHashtags([post]))[0];
+  post = (await attachHashtags([post]))[0];
 
-    // Attach tagged people
-    post = (await attachTaggedPeople([post]))[0];
+  // Attach tagged people
+  post = (await attachTaggedPeople([post]))[0];
 
-    // Attach counts
-    post = (await attachPostCounts([post]))[0];
+  // Attach counts
+  post = (await attachPostCounts([post]))[0];
 
-    return post;
-  };
+  return post;
+};
 
-  // send only reels
-  // loggedin user posts
-  const getPostsByUser = async (userId: string) => {
-    const posts = await Post.find({ authorId: userId, postType: "reels" }).sort({ createdAt: -1 })
+// send only reels
+// loggedin user posts
+const getPostsByUser = async (userId: string) => {
+  const posts = await Post.find({ authorId: userId, postType: "reels" }).sort({ createdAt: -1 })
     .populate({
       path: 'authorId',
       select: 'username',
-      populate: { 
-        path: 'userDetails', 
-        select: 'name photo' 
+      populate: {
+        path: 'userDetails',
+        select: 'name photo'
       }
     }).lean();
 
-    let result = posts;
+  let result = posts;
 
-    result = await attachHashtags(result);
-    result = await attachTaggedPeople(result);
-    result = await attachPostCounts(result);
+  result = await attachHashtags(result);
+  result = await attachTaggedPeople(result);
+  result = await attachPostCounts(result);
 
-    return result;
-  };
+  return result;
+};
 
-  const getPostsByUserId = async (userId: string) => {
+const getPostsByUserId = async (userId: string) => {
 
-    let posts = await Post.find({ authorId: userId })
+  let posts = await Post.find({ authorId: userId, postType: "reels" })
     .sort({ createdAt: -1 })
     .populate({
       path: 'authorId',
       select: 'username',
-      populate: { 
-        path: 'userDetails', 
-        select: 'name photo' 
+      populate: {
+        path: 'userDetails',
+        select: 'name photo'
       }
     }).lean();
 
-    
-     const simplified = posts.map((p: any) => ({
+
+  const simplified = posts.map((p: any) => ({
     _id: p._id,
     title: p.title,
     body: p.body,
@@ -241,10 +241,10 @@ const attachPostCounts = async (posts: any[]) => {
     authorPhoto: p.authorId?.userDetails?.photo,
   }));
 
-    return simplified;
-  };
+  return simplified;
+};
 
- const getFeed = async (currentUserId: string) => {
+const getFeed = async (currentUserId: string) => {
 
   const followingRecords = await Follow.find({ followingUserId: currentUserId })
     .select('followedUserId');
@@ -253,7 +253,7 @@ const attachPostCounts = async (posts: any[]) => {
 
   const posts = await Post.find({
     $or: [
-      { audience: 'everyone', status: 'active' },
+      { audience: 'everyone', status: 'active', postType: { $in: ['reels', 'story'] } },
       { authorId: { $in: followingIds }, audience: 'follower', status: 'active' }
     ]
   })
@@ -264,7 +264,7 @@ const attachPostCounts = async (posts: any[]) => {
       populate: { path: 'userDetails', select: 'name photo' }
     }).lean();
 
-     let result = posts;
+  let result = posts;
   result = await attachHashtags(result);
   result = await attachTaggedPeople(result);
   result = await attachPostCounts(result);
@@ -272,99 +272,101 @@ const attachPostCounts = async (posts: any[]) => {
   return result;
 };
 
-const getTaggedPosts = async (userId:string) =>{
-  const tagEntries = await TagPerson.find({userId}).select("postId").lean();
+const getTaggedPosts = async (userId: string) => {
+  const tagEntries = await TagPerson.find({ userId }).select("postId").lean();
   const postIds = tagEntries.map(t => t.postId);
-  if(!postIds.length) return [];
-  let posts = await Post.find({_id: { $in:postIds }, status:"active"})
-  .sort({createdAt:-1})
-  .populate({
-    path:"authorId",
-    select:"username",
-    populate: {
-      path:"userDetails", select:"name photo"
-    }
-  })
-  .lean();
+  if (!postIds.length) return [];
+  let posts = await Post.find({ _id: { $in: postIds }, status: "active" })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: "authorId",
+      select: "username",
+      populate: {
+        path: "userDetails", select: "name photo"
+      }
+    })
+    .lean();
 
   posts = await attachHashtags(posts);
   posts = await attachTaggedPeople(posts);
   posts = await attachPostCounts(posts);
 
- return posts;
+  return posts;
 }
 
-  const updatePost = async (postId: string, data: Partial<IPost>) => {
-    
-    return await Post.findByIdAndUpdate(postId, data, { new: true, runValidators: true });
-  };
+const updatePost = async (postId: string, data: Partial<IPost>) => {
 
-  const deletePost = async (postId: string) => {
-    const session = await mongoose.startSession();
+  return await Post.findByIdAndUpdate(postId, data, { new: true, runValidators: true });
+};
 
-    let usedTransaction = false;
-    const safeSession = usedTransaction ? session : null;
 
-    try {
-      try {
-        session.startTransaction();
-        usedTransaction = true;
-      } catch (err) {
-        usedTransaction = false;
-      }
 
-      const post = await Post.findById(postId).session(safeSession);
-      if(!post){
-        if(usedTransaction){
-          await session.abortTransaction();
-          session.endSession();
-        }
-        throw new AppError(status.NOT_FOUND, "Post not found");
-      }
+const isReplicaSet = async () => {
+  const admin = mongoose.connection.db?.admin();
+  const info = await admin?.command({ hello: 1 });
+  return !!info?.setName;
+};
 
-      await Post.findByIdAndDelete(postId, usedTransaction ? {session} : undefined);
+const deletePost = async (postId: string) => {
 
-      const deleteOps: Promise<any>[] =[];
+  const useTransaction = await isReplicaSet();
+  const session = useTransaction ? await mongoose.startSession() : null;
 
-        deleteOps.push(PostTag.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(TagPerson.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(ChallengeParticipant.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(Story.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(PostReaction.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(Comment.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(SharedPost.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(SavedPost.deleteMany({ postId }).session(safeSession));
-        deleteOps.push(PostWatchCount.deleteMany({ postId }).session(safeSession));
+  try {
 
-        await Promise.all(deleteOps);
-
-        if(usedTransaction){
-          await session.commitTransaction();
-          session.endSession();
-        }
-        return true;
-    
-    } catch (err){
-      try {
-        if(usedTransaction){
-          await session.abortTransaction();
-          session.endSession();
-        }
-      } catch (e) {
-        
-      }
-      throw err;
+    if (useTransaction && session) {
+      session.startTransaction();
     }
 
-  };
+    const post = await Post.findById(postId).session(session || null);
+    if (!post) throw new AppError(status.NOT_FOUND, "Post not found");
 
-  export const PostServices ={
-    createPost,
-    getPostById,
-    getPostsByUser,
-    getPostsByUserId,
-    getFeed,
-    updatePost,
-    deletePost,
-    getTaggedPosts
+    await Post.deleteOne({ _id: postId }).session(session || null);
+
+    const deleteOps = [
+      PostTag.deleteMany({ postId }),
+      TagPerson.deleteMany({ postId }),
+      ChallengeParticipant.deleteMany({ postId }),
+      Story.deleteMany({ postId }),
+      PostReaction.deleteMany({ postId }),
+      Comment.deleteMany({ postId }),
+      SharedPost.deleteMany({ postId }),
+      SavedPost.deleteMany({ postId }),
+      PostWatchCount.deleteMany({ postId })
+    ];
+
+    if (useTransaction && session) {
+      deleteOps.forEach(op => op.session(session));
+    }
+
+    await Promise.all(deleteOps);
+
+    if (useTransaction && session) {
+      await session.commitTransaction();
+      session.endSession();
+    }
+
+    return true;
+
+  } catch (err) {
+
+    if (useTransaction && session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
+
+    throw err;
   }
+};
+
+
+export const PostServices = {
+  createPost,
+  getPostById,
+  getPostsByUser,
+  getPostsByUserId,
+  getFeed,
+  updatePost,
+  deletePost,
+  getTaggedPosts
+}

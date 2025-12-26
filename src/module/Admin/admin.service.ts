@@ -5,7 +5,6 @@ import { Admin } from "../AdminAuth/adminAuth.modal";
 import AppError from "../../app/errors/AppError";
 import status from "http-status";
 
-
 const getDashboardData = async () => {
     const users = await User.countDocuments();
     const posts = await Post.countDocuments();
