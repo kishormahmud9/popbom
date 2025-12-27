@@ -2,6 +2,7 @@ import { catchAsync } from "../../app/utils/catchAsync";
 import sendResponse from "../../app/utils/sendResponse";
 import status from "http-status";
 import { ChallengeParticipantServices } from "./participant.service";
+import AppError from "../../app/errors/AppError";
 
 const addParticipant = catchAsync(async (req, res) => {
   const data = { ...req.body, participantId: req.user?.id };
@@ -48,9 +49,21 @@ const removeParticipant = catchAsync(async (req, res) => {
   });
 });
 
+const getAllParticipantsRanked = catchAsync(async (req, res) => {
+  const { challengeId } = req.params;
+  if (!challengeId) throw new AppError(status.BAD_REQUEST, "Challenge ID is required");
+  const ranking = await ChallengeParticipantServices.getAllParticipantsRanked(challengeId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    data: ranking,
+  });
+});
 export const ChallengeParticipantController = {
   addParticipant,
   getParticipantsByChallenge,
   getChallengesByUser,
   removeParticipant,
+  getAllParticipantsRanked,
 };

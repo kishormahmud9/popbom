@@ -82,9 +82,9 @@ const createPost = async (data: Partial<CreatePostInput>) => {
       participantId: new mongoose.Types.ObjectId(data.authorId)
     })
   }
+  
   //handle postType ='story'
   if (post.postType === 'story') {
-
     await Story.create({
       authorId: post.authorId,
       postId: post._id

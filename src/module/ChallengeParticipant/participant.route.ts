@@ -12,6 +12,9 @@ router.get("/challenge/:challengeId", ChallengeParticipantController.getParticip
 
 router.get("/user/:userId", ChallengeParticipantController.getChallengesByUser);
 
+// Get All Participants Ranked by Challenge
+router.get("/all/:challengeId", auth(USER_ROLE.user), ChallengeParticipantController.getAllParticipantsRanked);
+
 router.delete("/:id", auth(USER_ROLE.user, USER_ROLE.admin), ChallengeParticipantController.removeParticipant);
 
 export const ChallengeParticipantRoutes = router;
