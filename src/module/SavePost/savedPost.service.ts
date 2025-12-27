@@ -7,17 +7,21 @@ import { Post } from "../Post/post.model";
 
 interface SavePayload {
   postId: Types.ObjectId | string;
+  userId: Types.ObjectId | string;
 }
 
 const savePost = async (payload: SavePayload) => {
   try {
-    const userId = await Post.findById(payload.postId).select("authorId");
+    const authorId = await Post.findById(payload.postId).select("authorId");
 
-    if (!userId) throw new AppError(status.NOT_FOUND, "Post not found");
+    console.log('authorId', authorId);
+
+    if (!authorId) throw new AppError(status.NOT_FOUND, "Post not found");
 
     const record = await SavedPost.create({
       postId: payload.postId,
-      userId: userId?.authorId,
+      authorId: authorId?.authorId,
+      userId: payload.userId,
     });
 
     return record;
@@ -47,11 +51,12 @@ const getSavedById = async (id: string) => {
 };
 
 const getSavedByUser = async (userId: string) => {
+
   const data = await SavedPost.find({ userId })
     .sort({ createdAt: -1 })
     .populate("postId", "title videoUrl createdAt")
     .populate({
-      path: "userId",
+      path: "authorId",
       select: "username",
       populate: {
         path: "userDetails",

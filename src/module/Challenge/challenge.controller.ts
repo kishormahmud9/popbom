@@ -7,12 +7,12 @@ import { JwtPayload } from "jsonwebtoken";
 const createChallenge = catchAsync(async (req, res) => {
   const fileUrl = req.file?.path;
   const data = {
-     ...req.body, 
-     authorId: req.user?.id,
-     challengePoster:fileUrl
-    };
+    ...req.body,
+    authorId: req.user?.id,
+    challengePoster: fileUrl
+  };
 
-      if(typeof data.rules ==='string'){
+  if (typeof data.rules === 'string') {
     try {
       data.rules = JSON.parse(data.rules);
     } catch (error) {
@@ -32,7 +32,9 @@ const createChallenge = catchAsync(async (req, res) => {
 //Get all challenges
 const getAllChallenges = catchAsync(async (req, res) => {
 
-  const result = await ChallengeServices.getAllChallenges();
+  const currentUserId = req.user?._id;
+  
+  const result = await ChallengeServices.getAllChallenges(currentUserId);
 
   sendResponse(res, {
     statusCode: status.OK,

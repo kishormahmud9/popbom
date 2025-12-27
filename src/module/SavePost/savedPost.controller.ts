@@ -11,6 +11,7 @@ const savePost = catchAsync(async (req: Request, res: Response) => {
 
   const payload = {
     postId: req.body.postId,
+    userId: req.user?._id,
   };
 
   const saved = await SavedPostServices.savePost(payload);

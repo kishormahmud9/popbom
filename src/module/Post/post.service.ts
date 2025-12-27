@@ -84,7 +84,7 @@ const createPost = async (data: Partial<CreatePostInput>) => {
   }
   //handle postType ='story'
   if (post.postType === 'story') {
-    
+
     await Story.create({
       authorId: post.authorId,
       postId: post._id
@@ -227,8 +227,9 @@ const getPostsByUserId = async (userId: string) => {
       }
     }).lean();
 
+  const result = await attachPostCounts(posts);
 
-  const simplified = posts.map((p: any) => ({
+  const simplified = result.map((p: any) => ({
     _id: p._id,
     title: p.title,
     body: p.body,
@@ -241,9 +242,10 @@ const getPostsByUserId = async (userId: string) => {
     authorUsername: p.authorId?.username,
     authorName: p.authorId?.userDetails?.name,
     authorPhoto: p.authorId?.userDetails?.photo,
+    counts: p.counts
   }));
 
-  return simplified;
+  return simplified;  
 };
 
 const getFeed = async (currentUserId: string) => {

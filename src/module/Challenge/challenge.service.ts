@@ -174,8 +174,10 @@ const createChallenge = async (
   }
 };
 
-const getAllChallenges = async (): Promise<IChallengeResponse[]> => {
-  let challenges: any[] = await Challenge.find()
+const getAllChallenges = async (currentUserId: string): Promise<IChallengeResponse[]> => {
+  let challenges: any[] = await Challenge.find({
+    authorId: { $ne: currentUserId }
+  })
     .populate({
       path: 'authorId',
       select: '_id username',
