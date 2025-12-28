@@ -6,7 +6,7 @@ import { INotificationPayload } from "./notification.interface";
 
 
 const sendNotification = async (payload: INotificationPayload) => {
-  
+
   if (payload.userId.toString() === payload.senderId.toString()) return;
 
   const notification = await Notification.create({
@@ -49,11 +49,16 @@ const createCommentNotification = async (data: { postId: string, userId: string 
 const getNotificationsForUser = async (userId: string) => {
   return await Notification.find({ userId })
     .sort({ createdAt: -1 })
-    .populate("senderId", "username")
     .populate({
       path: "senderId",
+      select: "username",
       populate: { path: "userDetails", select: "name photo" }
     });
+
+};
+
+const markAsRead = async (id: string) => {
+  return await Notification.findByIdAndUpdate(id, { isRead: true }, { new: true });
 };
 
 export const NotificationService = {
@@ -61,4 +66,5 @@ export const NotificationService = {
   createReactionNotification,
   createCommentNotification,
   getNotificationsForUser,
+  markAsRead,
 };

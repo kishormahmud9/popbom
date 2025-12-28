@@ -2,9 +2,29 @@ import { IChallengeParticipant } from "./participant.interface";
 import { ChallengeParticipant } from "./participant.model";
 
 
+
 const addParticipant = async (data: Partial<IChallengeParticipant>) => {
-  return await ChallengeParticipant.create(data);
-}; 
+  const participant = await ChallengeParticipant.create(data);
+
+  if (participant) {
+    const { Challenge } = await import("../Challenge/challenge.model");
+    const challenge = await Challenge.findById(data.challengeId);
+
+    if (challenge && challenge.authorId.toString() !== data.participantId?.toString()) {
+      const { NotificationService } = await import("../Notification/notification.service");
+      await NotificationService.sendNotification({
+        userId: challenge.authorId as any,
+        senderId: data.participantId as any,
+        type: 'challenge',
+        message: 'accepted your challenge',
+        linkType: 'challenge',
+        linkId: challenge._id as any,
+      });
+    }
+  }
+
+  return participant;
+};
 
 const getParticipantsByChallenge = async (challengeId: string) => {
   return await ChallengeParticipant.find({ challengeId })

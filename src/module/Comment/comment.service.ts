@@ -8,13 +8,13 @@ import { NotificationService } from "../Notification/notification.service";
 // import { io } from "../../server";
 
 
-const createComment = async (data: Partial<IComment>) => {
+
+const createComment = async (data: Partial<IComment> & { mentions?: string[] }) => {
 
   const comment = await Comment.create(data);
 
-  // 1) Notify post author
   const post = await Post.findById(data.postId);
-  if (post) {
+  if (post && post.authorId.toString() !== data.userId?.toString()) {
     await NotificationService.sendNotification({
       userId: post.authorId as any,
       senderId: data.userId as any,
@@ -25,7 +25,6 @@ const createComment = async (data: Partial<IComment>) => {
     });
   }
 
-  // 2) Notify parent comment author (if this is a reply)
   if (data.parentCommentId) {
     const parentComment = await Comment.findById(data.parentCommentId);
     if (parentComment && parentComment.userId.toString() !== data.userId?.toString()) {
@@ -40,8 +39,37 @@ const createComment = async (data: Partial<IComment>) => {
     }
   }
 
+  if (data.mentions && data.mentions.length > 0) {
+    const { TagPerson } = await import("../TagPeople/tagPeople.model");
+
+    const validMentions = data.mentions.filter(id => id !== data.userId?.toString());
+
+    for (const mentionedUserId of validMentions) {
+      try {
+        await TagPerson.create({
+          postId: data.postId,
+          userId: mentionedUserId,
+          commentId: comment._id
+        });
+
+        await NotificationService.sendNotification({
+          userId: mentionedUserId as any,
+          senderId: data.userId as any,
+          type: 'tag',
+          message: 'mentioned you in a comment',
+          linkType: 'comment',
+          linkId: comment._id as any,
+        });
+
+      } catch (err) {
+        console.warn(`Failed to tag user ${mentionedUserId} in comment ${comment._id}`, err);
+      }
+    }
+  }
+
   return comment;
 };
+
 
 const getCommentsByPost = async (postId: string) => {
 
