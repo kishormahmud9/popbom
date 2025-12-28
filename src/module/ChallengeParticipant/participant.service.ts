@@ -4,9 +4,10 @@ import { IChallengeParticipant } from "./participant.interface";
 import { ChallengeParticipant } from "./participant.model";
 
 
+
 const addParticipant = async (data: Partial<IChallengeParticipant>) => {
   return await ChallengeParticipant.create(data);
-};
+}; 
 
 const getParticipantsByChallenge = async (challengeId: string) => {
   return await ChallengeParticipant.find({ challengeId })

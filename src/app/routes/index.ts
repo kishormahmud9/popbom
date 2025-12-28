@@ -23,6 +23,7 @@ import { GiftRoutes } from "../../module/Gift/gift.route";
 import { AdminAuthRoutes } from "../../module/AdminAuth/adminAuth.route";
 import { AdminRoutes } from "../../module/Admin/admin.route";
 import { ShareProfileRoutes } from "../../module/ShareProfile/shareProfile.route";
+import { NotificationRoutes } from "../../module/Notification/notification.route";
 
 const router = Router();
 
@@ -99,10 +100,10 @@ const moduleRoutes = [
         path: '/chat',
         route: ChatRoutes
     },
-    // {
-    //     path:'/notification',
-    //     route:NotificationRoutes
-    // },
+    {
+        path: '/notification',
+        route: NotificationRoutes
+    },
     {
         path: '/report',
         route: ReportRoutes
