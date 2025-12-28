@@ -1,30 +1,13 @@
+import mongoose from "mongoose";
+import { Post } from "../Post/post.model";
 import { IChallengeParticipant } from "./participant.interface";
 import { ChallengeParticipant } from "./participant.model";
 
 
 
 const addParticipant = async (data: Partial<IChallengeParticipant>) => {
-  const participant = await ChallengeParticipant.create(data);
-
-  if (participant) {
-    const { Challenge } = await import("../Challenge/challenge.model");
-    const challenge = await Challenge.findById(data.challengeId);
-
-    if (challenge && challenge.authorId.toString() !== data.participantId?.toString()) {
-      const { NotificationService } = await import("../Notification/notification.service");
-      await NotificationService.sendNotification({
-        userId: challenge.authorId as any,
-        senderId: data.participantId as any,
-        type: 'challenge',
-        message: 'accepted your challenge',
-        linkType: 'challenge',
-        linkId: challenge._id as any,
-      });
-    }
-  }
-
-  return participant;
-};
+  return await ChallengeParticipant.create(data);
+}; 
 
 const getParticipantsByChallenge = async (challengeId: string) => {
   return await ChallengeParticipant.find({ challengeId })
@@ -42,9 +25,80 @@ const removeParticipant = async (id: string) => {
   return await ChallengeParticipant.findByIdAndDelete(id);
 };
 
+const getAllParticipantsRanked = async (challengeId: string) => {
+
+  const ranking = await ChallengeParticipant.aggregate([
+    {
+      $match: {
+        challengeId: new mongoose.Types.ObjectId(challengeId)
+      }
+    },
+
+    // 🔹 Join watch count
+    {
+      $lookup: {
+        from: "postwatchcounts",
+        localField: "postId",
+        foreignField: "postId",
+        as: "watchData"
+      }
+    },
+
+    {
+      $addFields: {
+        watchCount: {
+          $ifNull: [{ $arrayElemAt: ["$watchData.watchCount", 0] }, 0]
+        }
+      }
+    },
+
+    // 🔹 Sort by highest views
+    { $sort: { watchCount: -1 } },
+
+    // 🔹 Join user
+    {
+      $lookup: {
+        from: "users",
+        localField: "participantId",
+        foreignField: "_id",
+        as: "user"
+      }
+    },
+    { $unwind: "$user" },
+
+    // 🔹 Join userDetails for name & photo
+    {
+      $lookup: {
+        from: "userdetails",
+        localField: "user._id",
+        foreignField: "userId",
+        as: "userDetails"
+      }
+    },
+    { $unwind: { path: "$userDetails", preserveNullAndEmptyArrays: true } },
+
+    // 🔹 Final output
+    {
+      $project: {
+        participantId: 1,
+        postId: 1,
+        watchCount: 1,
+        "user.username": 1,
+        "userDetails.name": 1,
+        "userDetails.photo": 1
+      }
+    }
+  ]);
+
+
+  return ranking;
+
+};
+
 export const ChallengeParticipantServices = {
   addParticipant,
   getParticipantsByChallenge,
   getChallengesByUser,
   removeParticipant,
+  getAllParticipantsRanked,
 };

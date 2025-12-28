@@ -11,7 +11,7 @@ const savePost = catchAsync(async (req: Request, res: Response) => {
 
   const payload = {
     postId: req.body.postId,
-    userId: (req.user as JwtPayload).id,
+    userId: req.user?._id,
   };
 
   const saved = await SavedPostServices.savePost(payload);
@@ -22,6 +22,7 @@ const savePost = catchAsync(async (req: Request, res: Response) => {
     message: "Post saved successfully",
     data: saved,
   });
+
 });
 
 
@@ -40,7 +41,7 @@ const getSavedByUser = catchAsync(async (req: Request, res: Response) => {
 
   const user = req.user as JwtPayload;
   const userId = user._id;
-  
+
   const data = await SavedPostServices.getSavedByUser(userId);
 
   sendResponse(res, {

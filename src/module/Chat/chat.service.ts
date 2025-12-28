@@ -33,8 +33,7 @@ const createMessage = async (payload: {
   text?: string;
   mediaUrl?: string | null;
 }) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+
   try {
     const msgDocs = await Message.create(
       [
@@ -47,7 +46,7 @@ const createMessage = async (payload: {
           isReadBy: [new Types.ObjectId(payload.senderId)],
         },
       ],
-      { session }
+
     );
 
     const msg = msgDocs[0];
@@ -59,7 +58,7 @@ const createMessage = async (payload: {
         lastMessage: payload.text || (payload.mediaUrl ? "Media" : ""),
         lastMessageAt: new Date(),
       },
-      { session }
+
     );
 
     await NotificationService.sendNotification({
@@ -71,9 +70,6 @@ const createMessage = async (payload: {
       linkId: payload.conversationId,
     });
 
-    await session.commitTransaction();
-    session.endSession();
-
     return await Message.findById(msg._id).populate({
       path: "senderId receiverId",
       select: "username",
@@ -83,8 +79,6 @@ const createMessage = async (payload: {
       },
     });
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
     throw err;
   }
 };

@@ -11,27 +11,25 @@ const recordWatch = async (
   userId: Types.ObjectId | string,
   postId: Types.ObjectId | string
 ) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
 
-    const existing = await PostWatch.findOne({ userId, postId }).session(session);
+  try {
+
+    const existing = await PostWatch.findOne({ userId, postId });
 
     if (!existing) {
       // first-time viewer -> create PostWatch and increment PostWatchCount
       await PostWatch.create(
         [{ userId, postId, count: 1 }],
-        { session }
+
       );
 
       const updatedCount = await PostWatchCount.findOneAndUpdate(
         { postId },
         { $inc: { watchCount: 1 } },
-        { session, upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, new: true, setDefaultsOnInsert: true }
       );
 
-      await session.commitTransaction();
-      session.endSession();
+
 
       // populate as needed
       const created = await PostWatch.findOne({ userId, postId });
@@ -41,37 +39,35 @@ const recordWatch = async (
       const updated = await PostWatch.findOneAndUpdate(
         { userId, postId },
         { $inc: { count: 1 } },
-        { new: true, session }
+        { new: true }
       );
 
-      await session.commitTransaction();
-      session.endSession();
 
       return { firstTime: false, postWatch: updated, postWatchCount: null };
     }
   } catch (err) {
-    try { await session.abortTransaction(); session.endSession(); } catch (_) {}
+
     throw err;
   }
 };
 
 const getWatchesByUser = async (userId: string) => {
   const data = await PostWatch.find({ userId })
-      .sort({ updatedAt: -1 })
-      .populate("postId", "title videoUrl createdAt")
-      .populate("userId", "name photo");
+    .sort({ updatedAt: -1 })
+    .populate("postId", "title videoUrl createdAt")
+    .populate("userId", "name photo");
 
   return data;
 };
 
-const getWatchesByPost = async (postId: string ) => {
-  const data = await 
+const getWatchesByPost = async (postId: string) => {
+  const data = await
     PostWatch.find({ postId })
       .sort({ updatedAt: -1 })
       .populate("userId", "name photo")
       .populate("postId", "title videoUrl");
 
-  return  data;
+  return data;
 };
 
 const getWatchById = async (id: string) => {

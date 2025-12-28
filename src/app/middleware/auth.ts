@@ -13,7 +13,7 @@ import { User } from "../../module/User/user.modal";
 const auth = (...requiredRoles:TUserRole[])=>{
     return catchAsync( async (req:Request, res:Response, next:NextFunction)=>{
         const token = req.headers.authorization?.split(' ')[1];
-        // console.log("token from auth",token)
+        
 
         // checking if the token is missing
         if(!token){
@@ -35,7 +35,6 @@ const auth = (...requiredRoles:TUserRole[])=>{
 
         const { role, email } = decoded;
 
-        // console.log('role, email from auth',role, email);
 
         // checking if the user is exist
         const user = await User.isUserExistByEmail(email);

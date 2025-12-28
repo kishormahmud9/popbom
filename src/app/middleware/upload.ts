@@ -8,7 +8,6 @@ const storage = new CloudinaryStorage({
     cloudinary,
     params: async(req, file) =>{
         const folder = "popbom_uploads";
-        console.log("file", file);
         return {
             folder,
             resource_type:"auto",
