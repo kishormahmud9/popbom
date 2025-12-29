@@ -56,6 +56,7 @@ const deleteSaved = catchAsync(async (req: Request, res: Response) => {
   if (!req.user) throw new AppError(status.UNAUTHORIZED, "User not authenticated");
 
   const user = req.user as JwtPayload;
+
   await SavedPostServices.deleteSaved(req.params.id, user);
 
   sendResponse(res, {

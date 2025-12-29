@@ -3,6 +3,7 @@ import sendResponse from "../../app/utils/sendResponse";
 import status from "http-status";
 import { ChallengeParticipantServices } from "./participant.service";
 import AppError from "../../app/errors/AppError";
+import { JwtPayload } from "jsonwebtoken";
 
 const addParticipant = catchAsync(async (req, res) => {
   const data = { ...req.body, participantId: req.user?.id };
@@ -60,10 +61,23 @@ const getAllParticipantsRanked = catchAsync(async (req, res) => {
     data: ranking,
   });
 });
+
+const getMyRankedParticipants = catchAsync(async (req, res) => {
+  const user = req.user as JwtPayload;
+  const userId = user._id;
+  const ranking = await ChallengeParticipantServices.getMyRankedParticipants(userId);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    data: ranking,
+  });
+});
+
 export const ChallengeParticipantController = {
   addParticipant,
   getParticipantsByChallenge,
   getChallengesByUser,
   removeParticipant,
   getAllParticipantsRanked,
+  getMyRankedParticipants,
 };

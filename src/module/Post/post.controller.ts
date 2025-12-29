@@ -29,20 +29,20 @@ const createPost = catchAsync(async (req, res) => {
 
 
 
-  const data = { 
-    ...req.body, 
+  const data = {
+    ...req.body,
     authorId: req.user?.id,
-    videoUrl: fileUrl 
+    videoUrl: fileUrl
   };
 
-  if(typeof data.tagPeople ==='string'){
+  if (typeof data.tagPeople === 'string') {
     try {
       data.tagPeople = JSON.parse(data.tagPeople);
     } catch (error) {
       data.tagPeople = [];
     }
   }
-  
+
   // Handle hashTagIds (note: field name should be hashTagIds, not hashTagNames)
   if (typeof data.hashTagIds === 'string') {
     try {
@@ -51,7 +51,7 @@ const createPost = catchAsync(async (req, res) => {
       data.hashTagIds = [];
     }
   }
-  
+
   // Also check for hashTagNames (common mistake) and convert if needed
   if (req.body.hashTagNames && !data.hashTagIds) {
     console.warn('hashTagNames field detected. Please use hashTagIds instead.');
@@ -69,19 +69,19 @@ const createPost = catchAsync(async (req, res) => {
   const post = await PostServices.createPost(data);
 
   sendResponse(res, {
-    statusCode: status.CREATED, 
-    success: true, 
-    message: 'Post created', 
-    data: post 
+    statusCode: status.CREATED,
+    success: true,
+    message: 'Post created',
+    data: post
   });
 });
 
 const getPost = catchAsync(async (req, res) => {
   const post = await PostServices.getPostById(req.params.id);
-  sendResponse(res, { 
+  sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message:'Post retrived successfully',
+    message: 'Post retrived successfully',
     data: post
   });
 });
@@ -89,36 +89,36 @@ const getPost = catchAsync(async (req, res) => {
 // only reels
 const getLoggedInUserPosts = catchAsync(async (req, res) => {
   const user = req.user as JwtPayload;
-  
+
   const userId = user._id.toString();
 
   const posts = await PostServices.getPostsByUser(userId);
 
-  sendResponse(res, { 
+  sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message:'Post retrived successfully',
+    message: 'Post retrived successfully',
     data: posts
   });
 });
 
 const getUserPostsByUserId = catchAsync(async (req, res) => {
-  
+
   const userId = req.params.userId;
 
   const posts = await PostServices.getPostsByUserId(userId);
 
-  sendResponse(res, { 
+  sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message:'Post retrived successfully',
+    message: 'Post retrived successfully',
     data: posts
   });
 });
 
 const getFeed = catchAsync(async (req, res) => {
   const currentUser = req.user as JwtPayload;
-
+  console.log(currentUser);
   const posts = await PostServices.getFeed(currentUser.id);
 
   sendResponse(res, {
@@ -133,7 +133,7 @@ const getFeed = catchAsync(async (req, res) => {
 const updatePost = catchAsync(async (req, res) => {
   const post = await PostServices.updatePost(req.params.id, req.body);
 
-  sendResponse(res, { 
+  sendResponse(res, {
     statusCode: status.OK,
     success: true,
     data: post
@@ -143,7 +143,7 @@ const updatePost = catchAsync(async (req, res) => {
 const deletePost = catchAsync(async (req, res) => {
   await PostServices.deletePost(req.params.postId);
 
-  sendResponse(res, { 
+  sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: 'Post deleted',
@@ -151,7 +151,7 @@ const deletePost = catchAsync(async (req, res) => {
   });
 });
 
-const getTaggedPosts = catchAsync(async (req, res) =>{
+const getTaggedPosts = catchAsync(async (req, res) => {
   const { userId } = req.params;
 
   const result = await PostServices.getTaggedPosts(userId);
@@ -159,12 +159,12 @@ const getTaggedPosts = catchAsync(async (req, res) =>{
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message:"Tagged posts retrieved successfully",
+    message: "Tagged posts retrieved successfully",
     data: result
   });
 });
 
-export const PostController = { 
+export const PostController = {
   createPost,
   getPost,
   getLoggedInUserPosts,

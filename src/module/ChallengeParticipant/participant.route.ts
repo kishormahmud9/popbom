@@ -12,8 +12,11 @@ router.get("/challenge/:challengeId", ChallengeParticipantController.getParticip
 
 router.get("/user/:userId", ChallengeParticipantController.getChallengesByUser);
 
-// Get All Participants Ranked by Challenge
+// Get Ranked Participants by Challenge id
 router.get("/all/:challengeId", auth(USER_ROLE.user), ChallengeParticipantController.getAllParticipantsRanked);
+
+// Get Ranked Participants that I created
+router.get("/my/challenges", auth(USER_ROLE.user), ChallengeParticipantController.getMyRankedParticipants);
 
 router.delete("/:id", auth(USER_ROLE.user, USER_ROLE.admin), ChallengeParticipantController.removeParticipant);
 

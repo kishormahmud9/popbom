@@ -82,7 +82,7 @@ const createPost = async (data: Partial<CreatePostInput>) => {
       participantId: new mongoose.Types.ObjectId(data.authorId)
     })
   }
-  
+
   //handle postType ='story'
   if (post.postType === 'story') {
     await Story.create({
@@ -245,7 +245,7 @@ const getPostsByUserId = async (userId: string) => {
     counts: p.counts
   }));
 
-  return simplified;  
+  return simplified;
 };
 
 const getFeed = async (currentUserId: string) => {
@@ -257,7 +257,7 @@ const getFeed = async (currentUserId: string) => {
 
   const posts = await Post.find({
     $or: [
-      { audience: 'everyone', status: 'active', postType: { $in: ['reels', 'story'] } },
+      { audience: 'everyone', status: 'active', postType: { $in: ['reels'] } },
       { authorId: { $in: followingIds }, audience: 'follower', status: 'active' }
     ]
   })
