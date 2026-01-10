@@ -31,7 +31,22 @@ const searchByImage = async (image: string) => {
     return data;
 }
 
+const searchByAudio = async (audio: string) => {
+    const result = await fetch(`${config.ai_visual_search_api_url}/api/v1/search/by-audio`, {
+        method: "POST",
+        body: JSON.stringify({ audio_url: audio }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    const data = await result.json();
+    if (result.status !== 200) {
+        throw new AppError(result.status, data.detail);
+    }
+    return data;
+}
 export const VisualSearchService = {
     searchByText,
     searchByImage,
+    searchByAudio,
 }
