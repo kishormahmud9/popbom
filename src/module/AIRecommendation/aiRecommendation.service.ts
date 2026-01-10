@@ -17,7 +17,7 @@ const getFeedForUser = async (userId: string) => {
 
 const getStemFeed = async (userId: string) => {
 
-    const stemFeed = await fetch(`${config.ai_recommendation_api_url}/api/v1/feed/stem/${userId}`, {
+    const stemFeed = await fetch(`${config.ai_recommendation_api_url}/api/v1/feed/stream/stem/${userId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json"

@@ -25,6 +25,7 @@ import { AdminRoutes } from "../../module/Admin/admin.route";
 import { ShareProfileRoutes } from "../../module/ShareProfile/shareProfile.route";
 import { NotificationRoutes } from "../../module/Notification/notification.route";
 import { AiRecommendationRoutes } from "../../module/AIRecommendation/aiRecommendation.route";
+import { VisualSearchRoutes } from "../../module/VisualSearch/search.route";
 
 const router = Router();
 
@@ -132,6 +133,10 @@ const moduleRoutes = [
     {
         path: "/ai-recommendation",
         route: AiRecommendationRoutes
+    },
+    {
+        path: '/ai-visual-search',
+        route: VisualSearchRoutes
     }
     
 ];

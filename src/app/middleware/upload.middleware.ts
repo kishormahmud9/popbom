@@ -8,6 +8,7 @@ export const handleUploadError = (
   next: NextFunction
 ) => {
   if (err instanceof multer.MulterError) {
+
     return res.status(400).json({
       success: false,
       message: err.message,
@@ -22,7 +23,7 @@ export const handleUploadError = (
         message: "Cloudinary configuration error. Please check your CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env file. The cloud_name may be incorrect or your Cloudinary account may be disabled.",
       });
     }
-
+    
     return res.status(500).json({
       success: false,
       message: err.message || "Upload failed",
