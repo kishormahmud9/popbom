@@ -24,6 +24,7 @@ import { AdminAuthRoutes } from "../../module/AdminAuth/adminAuth.route";
 import { AdminRoutes } from "../../module/Admin/admin.route";
 import { ShareProfileRoutes } from "../../module/ShareProfile/shareProfile.route";
 import { NotificationRoutes } from "../../module/Notification/notification.route";
+import { AiRecommendationRoutes } from "../../module/AIRecommendation/aiRecommendation.route";
 
 const router = Router();
 
@@ -127,7 +128,12 @@ const moduleRoutes = [
     {
         path: '/share-profile',
         route: ShareProfileRoutes
+    },
+    {
+        path: "/ai-recommendation",
+        route: AiRecommendationRoutes
     }
+    
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
