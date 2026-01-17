@@ -29,7 +29,6 @@ router.post(
 
 router.post(
     '/refresh-token',
-    validateRequest(AuthValidations.refreshTokenValidationSchema),
     AuthController.refreshToken,
 )
 
