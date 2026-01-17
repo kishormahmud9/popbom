@@ -26,6 +26,7 @@ import { ShareProfileRoutes } from "../../module/ShareProfile/shareProfile.route
 import { NotificationRoutes } from "../../module/Notification/notification.route";
 import { AiRecommendationRoutes } from "../../module/AIRecommendation/aiRecommendation.route";
 import { VisualSearchRoutes } from "../../module/VisualSearch/search.route";
+import { LiveRoutes } from "../../module/Live/live.route";
 
 const router = Router();
 
@@ -137,6 +138,10 @@ const moduleRoutes = [
     {
         path: '/ai-visual-search',
         route: VisualSearchRoutes
+    },
+    {
+        path: '/live',
+        route: LiveRoutes
     }
     
 ];

@@ -20,4 +20,8 @@ export default {
   app_url: process.env.APP_URL || "http://172.252.13.97:5000",
   ai_recommendation_api_url: process.env.AI_RECOMMENDATION_API_URL,
   ai_visual_search_api_url: process.env.AI_VISUAL_SEARCH_API_URL,
+  
+  // Agora Configuration
+  agora_app_id: process.env.AGORA_APP_ID,
+  agora_app_certificate: process.env.AGORA_APP_CERTIFICATE,
 };

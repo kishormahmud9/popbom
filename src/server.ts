@@ -132,6 +132,64 @@ async function main() {
         }
       });
 
+      // ========== LIVE BROADCAST EVENTS ==========
+      
+      // Join live room
+      socket.on("live:join", ({ liveId }: { liveId: string }) => {
+        if (!liveId) return;
+        socket.join(`live_${liveId}`);
+        console.log(`User ${userId} joined live room: live_${liveId}`);
+      });
+
+      // Leave live room
+      socket.on("live:leave", ({ liveId }: { liveId: string }) => {
+        if (!liveId) return;
+        socket.leave(`live_${liveId}`);
+        console.log(`User ${userId} left live room: live_${liveId}`);
+      });
+
+      // Send live comment
+      socket.on("live:comment", async (
+        { liveId, comment }: { liveId: string; comment: string },
+        ack
+      ) => {
+        try {
+          if (!liveId || !comment || !comment.trim()) {
+            throw new Error("Live ID and comment are required");
+          }
+
+          // Rate limiting: prevent spam (simple check - can be enhanced)
+          // In production, use Redis for proper rate limiting
+
+          // Get user details for comment
+          const { User } = await import("./module/User/user.modal");
+          const { UserDetails } = await import("./module/UserDetails/userDetails.model");
+          
+          const user = await User.findById(userId).select("username").lean();
+          const userDetails = await UserDetails.findOne({ userId }).select("name photo").lean();
+
+          const commentData = {
+            userId,
+            username: user?.username || "Unknown",
+            name: userDetails?.name || "",
+            photo: userDetails?.photo || "",
+            comment: comment.trim(),
+            timestamp: new Date(),
+          };
+
+          // Broadcast to all viewers in the live room
+          io.to(`live_${liveId}`).emit("live:comment:new", {
+            liveId,
+            ...commentData,
+          });
+
+          ack && ack(null, { success: true, comment: commentData });
+        } catch (err: any) {
+          console.error("live:comment error", err);
+          ack && ack({ error: err.message || "comment_failed" });
+        }
+      });
+
       socket.on("disconnect", () => {
         console.log("Socket disconnected:", socket.id, "userId:", userId);
         if (userId) {
