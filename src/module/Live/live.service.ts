@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
 import { Live } from "./live.model";
-import { ICreateLiveInput, IActiveLiveResponse, IViewerJoinLeaveInput } from "./live.interface";
+import {
+    ICreateLiveInput,
+    IActiveLiveResponse,
+    IViewerJoinLeaveInput,
+} from "./live.interface";
 import { User } from "../User/user.modal";
 import AppError from "../../app/errors/AppError";
 import status from "http-status";
+import { AgoraTokenService } from "./agoraToken.service";
 
 const startLive = async (userId: string, data: ICreateLiveInput) => {
     // Check if user already has an active live
@@ -78,14 +83,30 @@ const getActiveLives = async (): Promise<IActiveLiveResponse[]> => {
         })
         .lean();
 
-    return lives.map((live: any) => ({
-        liveId: live._id.toString(),
-        username: live.userId?.username || "Unknown",
-        channel: live.channel,
-        viewers: live.viewerCount || 0,
-        userId: live.userId?._id?.toString() || "",
-        startedAt: live.startedAt,
-    }));
+    return Promise.all(
+        lives.map(async (live: any) => {
+            // Generate a random numeric UID for the audience token
+            const uid = Math.floor(Math.random() * 900_000_000) + 100_000_000;
+            const tokenResponse = await AgoraTokenService.generateAgoraToken(
+                uid.toString(),
+                {
+                    channel: live.channel,
+                    role: "audience",
+                }
+            );
+
+            return {
+                liveId: live._id.toString(),
+                username: live.userId?.username || "Unknown",
+                channel: live.channel,
+                viewers: live.viewerCount || 0,
+                userId: live.userId?._id?.toString() || "",
+                startedAt: live.startedAt,
+                agoraToken: tokenResponse.token,
+                uid: tokenResponse.uid,
+            };
+        })
+    );
 };
 
 const getLiveById = async (liveId: string) => {

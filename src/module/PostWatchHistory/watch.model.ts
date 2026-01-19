@@ -16,5 +16,4 @@ postWatchSchema.index({userId:1, postId:1}, { unique:true });
 
 export const PostWatch = model<IPostWatch>("PostWatch", postWatchSchema);
 
-
 // this model stands to see how much user(unique) view this

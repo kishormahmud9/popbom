@@ -33,6 +33,8 @@ export interface IActiveLiveResponse {
     viewers: number;
     userId: string;
     startedAt: Date;
+    agoraToken: string;
+    uid: number | string;
 }
 
 export interface IViewerJoinLeaveInput {
