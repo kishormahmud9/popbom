@@ -23,9 +23,6 @@ const createReply = async (data: IReplyPayload) => {
             data.authorUserId.toString()
         );
 
-        console.log("conversation ", conversation);
-        console.log("data.replyUserId ", data);
-
         if (conversation) {
             await ChatService.createMessage({
                 conversationId: conversation._id.toString(),

@@ -14,8 +14,6 @@ const savePost = async (payload: SavePayload) => {
   try {
     const authorId = await Post.findById(payload.postId).select("authorId");
 
-    console.log('authorId', authorId);
-
     if (!authorId) throw new AppError(status.NOT_FOUND, "Post not found");
 
     const record = await SavedPost.create({

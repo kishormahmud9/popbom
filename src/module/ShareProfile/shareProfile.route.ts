@@ -11,4 +11,10 @@ router.get(
     ShareProfileControllers.getShareProfileData
 );
 
+router.get(
+    "/:username",
+    auth(USER_ROLE.user, USER_ROLE.admin),
+    ShareProfileControllers.getShareProfileDataByUsername
+);
+
 export const ShareProfileRoutes = router;

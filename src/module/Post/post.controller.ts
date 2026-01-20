@@ -43,6 +43,8 @@ const createPost = catchAsync(async (req, res) => {
     }
   }
 
+  console.log("post is done");
+
   // Handle hashTagIds (note: field name should be hashTagIds, not hashTagNames)
   if (typeof data.hashTagIds === 'string') {
     try {
@@ -118,7 +120,6 @@ const getUserPostsByUserId = catchAsync(async (req, res) => {
 
 const getFeed = catchAsync(async (req, res) => {
   const currentUser = req.user as JwtPayload;
-  console.log(currentUser);
   const posts = await PostServices.getFeed(currentUser.id);
 
   sendResponse(res, {

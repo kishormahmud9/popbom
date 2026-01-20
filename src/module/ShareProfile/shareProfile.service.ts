@@ -19,6 +19,19 @@ const getShareProfileDataFromDB = async (userId: string) => {
     };
 };
 
+const getShareProfileDataByUsername = async (username: string) => {
+    const user = await User.findOne({ username }).populate('userDetails').lean();
+
+    if (!user) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    return {
+        user
+    };
+};
+
 export const ShareProfileServices = {
     getShareProfileDataFromDB,
+    getShareProfileDataByUsername,
 };

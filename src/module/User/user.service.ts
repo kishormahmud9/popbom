@@ -204,7 +204,6 @@ const getGiftInfoByUserId = async (userId: string) => {
 // };
 
 const getAllUsersWithFollowStatus = async (currentUserId: string) => {
-  console.log('current userid ',currentUserId);
   
   const users = await User.find({ _id: { $ne: currentUserId } })
     .select('username') 

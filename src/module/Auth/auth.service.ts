@@ -98,7 +98,6 @@ const generateUniqueUsername = async (name: string): Promise<string> => {
 
 const registerUser = async (payload:TRegisterUserPayload) =>{
   const { name, email, mobile, password } = payload;
-  console.log('received name during registration ',name);
 
   const existingUser = await User.isUserExistByEmail(email);
     if(existingUser) throw new AppError(status.CONFLICT, 'User already exists!');
@@ -201,7 +200,6 @@ const logoutUser = async (refreshToken: string) =>{
 const changePassword = async (user: JwtPayload | any, payload: ChangePasswordPayload) => {
  
   const userData = await User.findOne({email:user.email}).select("+password");
-  console.log(userData);
   
   if (!userData) throw new AppError(status.NOT_FOUND, "User not found");
 
