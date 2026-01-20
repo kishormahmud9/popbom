@@ -43,8 +43,6 @@ const createPost = catchAsync(async (req, res) => {
     }
   }
 
-  console.log("post is done");
-
   // Handle hashTagIds (note: field name should be hashTagIds, not hashTagNames)
   if (typeof data.hashTagIds === 'string') {
     try {

@@ -60,7 +60,7 @@ const getSavedByUser = async (userId: string) => {
         path: "userDetails",
         select: "name photo"
       }
-    });
+    })
 
   return data;
 };
