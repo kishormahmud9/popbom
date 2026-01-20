@@ -3,11 +3,23 @@ import { Post } from "../Post/post.model";
 import { IChallengeParticipant } from "./participant.interface";
 import { ChallengeParticipant } from "./participant.model";
 import { Challenge } from "../Challenge/challenge.model";
+import AppError from "../../app/errors/AppError";
+import status from "http-status";
 
 
 
 const addParticipant = async (data: Partial<IChallengeParticipant>) => {
-  return await ChallengeParticipant.create(data);
+  // check if the chellenges is exist
+  const challenge = await Challenge.findById(data.challengeId);
+  if (!challenge) {
+    throw new AppError(status.BAD_REQUEST, "Challenge not found");
+  }
+  // check if the author is join the challenge
+  if (challenge.authorId.toString() === data.participantId?.toString()) {
+    throw new AppError(status.BAD_REQUEST, "You are the author of the challenge, you cannot join your own challenge");
+  }
+  const participant = await ChallengeParticipant.create(data);
+  return participant;
 };
 
 const getParticipantsByChallenge = async (challengeId: string) => {

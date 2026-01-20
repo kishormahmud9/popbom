@@ -109,6 +109,17 @@ const deleteChallenge = catchAsync(async (req, res) => {
   });
 });
 
+
+const getAllVideoChallenges = catchAsync(async (req, res) => {
+
+  const result = await ChallengeServices.getAllVideoChallenges();
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Video challenges retrieved successfully",
+    data: result,
+  });
+});
 export const ChallengeController = {
   createChallenge,
   getAllChallenges,
@@ -117,4 +128,5 @@ export const ChallengeController = {
   getChallengeById,
   updateChallenge,
   deleteChallenge,
+  getAllVideoChallenges,
 };

@@ -7,6 +7,7 @@ import { JwtPayload } from "jsonwebtoken";
 
 const addParticipant = catchAsync(async (req, res) => {
   const data = { ...req.body, participantId: req.user?.id };
+ 
   const participant = await ChallengeParticipantServices.addParticipant(data);
 
   sendResponse(res, {

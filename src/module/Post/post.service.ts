@@ -363,6 +363,31 @@ const deletePost = async (postId: string) => {
   }
 };
 
+const getTrendingPosts = async () => {
+  // 1. Base query: only active reels
+  let posts = await Post.find({ postType: 'reels', status: 'active' })
+    .populate({
+      path: 'authorId',
+      select: 'username',
+      populate: {
+        path: 'userDetails',
+        select: 'name photo',
+      },
+    })
+    .lean();
+
+  // 2. Attach counts (including watchCount)
+  posts = await attachPostCounts(posts);
+
+  // 3. Sort by watchCount (descending) so higher watch first
+  posts.sort((a: any, b: any) => {
+    const aWatch = a?.counts?.watchCount || 0;
+    const bWatch = b?.counts?.watchCount || 0;
+    return bWatch - aWatch;
+  });
+
+  return posts;
+};
 
 export const PostServices = {
   createPost,
@@ -372,5 +397,6 @@ export const PostServices = {
   getFeed,
   updatePost,
   deletePost,
-  getTaggedPosts
+  getTaggedPosts,
+  getTrendingPosts
 }

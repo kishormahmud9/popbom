@@ -14,6 +14,7 @@ router.post("/",
 router.get("/all", auth(USER_ROLE.user) ,ChallengeController.getAllChallenges);
 router.get("/my", auth(USER_ROLE.user), ChallengeController.getMyChallenges);
 router.get("/participated", auth(USER_ROLE.user), ChallengeController.getParticipantChallenges);
+router.get("/videos", ChallengeController.getAllVideoChallenges);
 router.get(
   "/:id",
   auth(USER_ROLE.user, USER_ROLE.admin),
@@ -25,6 +26,8 @@ router.get(
 router.patch("/:id", auth(USER_ROLE.user, USER_ROLE.admin), ChallengeController.updateChallenge);
 
 router.delete("/:id", auth(USER_ROLE.user, USER_ROLE.admin), ChallengeController.deleteChallenge);
+
+
 
 
 

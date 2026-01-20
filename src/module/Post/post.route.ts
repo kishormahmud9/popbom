@@ -9,6 +9,7 @@ const router = Router();
 
 router.post('/', auth(USER_ROLE.user, USER_ROLE.admin), upload.single("video"),handleUploadError, PostController.createPost);  //ok
 router.get('/my-posts', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getLoggedInUserPosts); //ok
+router.get('/trending', PostController.getTrendingPosts);
 router.get('/user-posts/:userId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getUserPostsByUserId);
 router.get('/tagged/:userId', auth(USER_ROLE.user, USER_ROLE.admin), PostController.getTaggedPosts); //ok
 

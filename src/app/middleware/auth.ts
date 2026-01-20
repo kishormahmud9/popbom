@@ -10,19 +10,16 @@ import { TUserRole } from "../../module/User/user.interface";
 import { User } from "../../module/User/user.modal";
 
 
-const auth = (...requiredRoles:TUserRole[])=>{
-    return catchAsync( async (req:Request, res:Response, next:NextFunction)=>{
-        
+const auth = (...requiredRoles: TUserRole[]) => {
+    return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const token = req.headers.authorization?.split(' ')[1];
-
-      
         
-
         // checking if the token is missing
-        if(!token){
+        if (!token) {
             throw new AppError(httpStatus.UNAUTHORIZED, 'Your are not authorized!');
         }
-       
+
         let decoded;
 
         try {
@@ -32,8 +29,8 @@ const auth = (...requiredRoles:TUserRole[])=>{
                 config.jwt_access_secret as string
             ) as JwtPayload;
         } catch (error) {
-            
-            throw new AppError(httpStatus.UNAUTHORIZED,'Unauthorized');
+
+            throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized');
         }
 
         const { role, email } = decoded;
@@ -41,18 +38,18 @@ const auth = (...requiredRoles:TUserRole[])=>{
 
         // checking if the user is exist
         const user = await User.isUserExistByEmail(email);
-        if(!user){
-            throw new AppError(httpStatus.NOT_FOUND,'This user is not exist');
+        if (!user) {
+            throw new AppError(httpStatus.NOT_FOUND, 'This user is not exist');
         }
 
-        if(requiredRoles && !requiredRoles.includes(role)){
+        if (requiredRoles && !requiredRoles.includes(role)) {
             throw new AppError(
                 httpStatus.UNAUTHORIZED,
                 'Your are not authorized!!'
             );
         }
         req.user = user;
-            next();
+        next();
     })
 };
 

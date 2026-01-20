@@ -5,6 +5,7 @@ import { ChallengeRule } from "../ChallengeRules/challengeRules.model";
 import { ChallengeParticipant } from "../ChallengeParticipant/participant.model";
 import { NotificationService } from "../Notification/notification.service";
 import { Follow } from "../Follow/follow.model";
+import { Post } from "../Post/post.model";
 
 
 const attachChallengeRules = async (challenges: any[]) => {
@@ -272,6 +273,24 @@ const deleteChallenge = async (id: string) => {
   return res;
 };
 
+const getAllVideoChallenges = async () => {
+
+  const videos = await Post.find({
+    postType: 'challenges'
+  }).populate({
+    path: 'authorId',
+    select: '_id username',
+    populate: {
+      path: 'userDetails',
+      select: 'name photo'
+    }
+  }).populate({
+    path: 'challengeId',
+    select: 'challengeName challengePoster',
+  }).lean();
+  return videos;
+};
+
 
 export const ChallengeServices = {
   createChallenge,
@@ -280,5 +299,6 @@ export const ChallengeServices = {
   getParticipantChallenges,
   updateChallenge,
   deleteChallenge,
-  getChallengeById
+  getChallengeById,
+  getAllVideoChallenges,
 }

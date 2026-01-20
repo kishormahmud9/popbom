@@ -165,6 +165,15 @@ const getTaggedPosts = catchAsync(async (req, res) => {
   });
 });
 
+const getTrendingPosts = catchAsync(async (req, res) => {
+  const posts = await PostServices.getTrendingPosts();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Trending posts retrieved successfully",
+    data: posts
+  });
+});
 export const PostController = {
   createPost,
   getPost,
@@ -173,5 +182,6 @@ export const PostController = {
   getFeed,
   updatePost,
   deletePost,
-  getTaggedPosts
+  getTaggedPosts,
+  getTrendingPosts
 };

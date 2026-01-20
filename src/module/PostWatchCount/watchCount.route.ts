@@ -6,7 +6,7 @@ import { PostWatchCountController } from "./watchCount.controller";
 const router = Router();
 
 
-router.post("/increment", auth(USER_ROLE.user, USER_ROLE.admin), PostWatchCountController.incrementWatch);
+router.post("/increment", auth(USER_ROLE.user), PostWatchCountController.incrementWatch);
 
 router.get("/:postId", PostWatchCountController.getWatchCount);
 
