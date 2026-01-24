@@ -7,6 +7,10 @@ import { NotificationService } from "../Notification/notification.service";
 import { Follow } from "../Follow/follow.model";
 import { Post } from "../Post/post.model";
 import { PostReaction } from "../PostReaction/reaction.model";
+import { PostWatchCount } from "../PostWatchCount/watchCount.model";
+import { Comment } from "../Comment/comment.model";
+import { SharedPost } from "../SharedPost/sharedPost.model";
+import { SavedPost } from "../SavePost/savedPost.model";
 
 
 const attachChallengeRules = async (challenges: any[]) => {
@@ -297,83 +301,116 @@ const getAllVideoChallenges = async () => {
   // Get all postIds
   const postIds = videos.map((v: any) => v._id);
 
-  // Get all reactions for these posts
-  const reactions = await PostReaction.aggregate([
-    {
-      $match: {
-        postId: { $in: postIds }
+  // Get counts for like, comment, share, saved, and watchCount
+  const [likeCounts, commentCounts, shareCounts, savedCounts, watchCounts] = await Promise.all([
+    // Like count (PostReaction where reaction = "like")
+    PostReaction.aggregate([
+      {
+        $match: {
+          postId: { $in: postIds },
+          reaction: "like"
+        }
+      },
+      {
+        $group: {
+          _id: "$postId",
+          count: { $sum: 1 }
+        }
       }
-    },
-    {
-      $group: {
-        _id: {
-          postId: "$postId",
-          reaction: "$reaction"
-        },
-        count: { $sum: 1 }
+    ]),
+    // Comment count
+    Comment.aggregate([
+      {
+        $match: {
+          postId: { $in: postIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$postId",
+          count: { $sum: 1 }
+        }
       }
-    }
+    ]),
+    // Share count
+    SharedPost.aggregate([
+      {
+        $match: {
+          postId: { $in: postIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$postId",
+          count: { $sum: 1 }
+        }
+      }
+    ]),
+    // Saved count (how many users saved this post)
+    SavedPost.aggregate([
+      {
+        $match: {
+          postId: { $in: postIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$postId",
+          count: { $sum: 1 }
+        }
+      }
+    ]),
+    // Watch counts
+    PostWatchCount.find({
+      postId: { $in: postIds }
+    }).lean()
   ]);
 
-  // Build a map: postId -> reactionsByType
-  const reactionsMap = new Map<string, { heart: number; like: number; sad: number; happy: number; angry: number }>();
+  // Build maps: postId -> count
+  const likeMap = new Map<string, number>();
+  const commentMap = new Map<string, number>();
+  const shareMap = new Map<string, number>();
+  const savedMap = new Map<string, number>();
+  const watchCountMap = new Map<string, number>();
 
-  // Initialize reactions map for all posts
-  postIds.forEach((pid: any) => {
-    reactionsMap.set(pid.toString(), {
-      heart: 0,
-      like: 0,
-      sad: 0,
-      happy: 0,
-      angry: 0
-    });
+  // Process like counts
+  likeCounts.forEach((item: any) => {
+    likeMap.set(item._id.toString(), item.count);
   });
 
-  // Process reactions
-  reactions.forEach((r: any) => {
-    const postId = r._id.postId.toString();
-    const reactionType = r._id.reaction;
-    const count = r.count;
-
-    const reactionsByType = reactionsMap.get(postId);
-    if (reactionsByType) {
-      switch (reactionType) {
-        case "heart":
-          reactionsByType.heart = count;
-          break;
-        case "like":
-          reactionsByType.like = count;
-          break;
-        case "sad":
-          reactionsByType.sad = count;
-          break;
-        case "happy":
-          reactionsByType.happy = count;
-          break;
-        case "angry":
-          reactionsByType.angry = count;
-          break;
-      }
-    }
+  // Process comment counts
+  commentCounts.forEach((item: any) => {
+    commentMap.set(item._id.toString(), item.count);
   });
 
-  // Attach reactionCount and reactionsByType to each video
+  // Process share counts
+  shareCounts.forEach((item: any) => {
+    shareMap.set(item._id.toString(), item.count);
+  });
+
+  // Process saved counts
+  savedCounts.forEach((item: any) => {
+    savedMap.set(item._id.toString(), item.count);
+  });
+
+  // Process watch counts
+  watchCounts.forEach((wc: any) => {
+    watchCountMap.set(wc.postId.toString(), wc.watchCount || 0);
+  });
+
+  // Attach counts to each video
   return videos.map((video: any) => {
     const postIdStr = video._id.toString();
-    const reactionsByType = reactionsMap.get(postIdStr) || {
-      heart: 0,
-      like: 0,
-      sad: 0,
-      happy: 0,
-      angry: 0
-    };
-
-    const reactionCount = reactionsByType.heart + reactionsByType.like + reactionsByType.sad + reactionsByType.happy + reactionsByType.angry;
 
     return {
       ...video,
-      reactionCount,
-      reactionsByType
+      counts: {
+        like: likeMap.get(postIdStr) || 0,
+        comment: commentMap.get(postIdStr) || 0,
+        share: shareMap.get(postIdStr) || 0,
+        saved: savedMap.get(postIdStr) || 0,
+        watchCount: watchCountMap.get(postIdStr) || 0
+      }
     };
   });
 };
