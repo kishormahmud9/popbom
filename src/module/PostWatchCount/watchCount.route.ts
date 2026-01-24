@@ -10,7 +10,7 @@ router.post("/increment", auth(USER_ROLE.user), PostWatchCountController.increme
 
 router.get("/:postId", PostWatchCountController.getWatchCount);
 
-router.patch("/set", auth(USER_ROLE.admin), PostWatchCountController.setWatchCount);
+router.patch("/set",     PostWatchCountController.setWatchCount);
 
 router.delete("/:postId", auth(USER_ROLE.admin), PostWatchCountController.resetWatchCount);
 
