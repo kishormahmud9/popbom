@@ -18,6 +18,11 @@ const addParticipant = async (data: Partial<IChallengeParticipant>) => {
   if (challenge.authorId.toString() === data.participantId?.toString()) {
     throw new AppError(status.BAD_REQUEST, "You are the author of the challenge, you cannot join your own challenge");
   }
+  // check if the post is already joined the challenge
+  const isJoined = await ChallengeParticipant.findOne({ postId: data.postId, challengeId: data.challengeId });
+  if (isJoined) {
+    throw new AppError(status.BAD_REQUEST, "You have already joined the challenge");
+  }
   const participant = await ChallengeParticipant.create(data);
   return participant;
 };

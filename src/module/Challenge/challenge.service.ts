@@ -6,6 +6,7 @@ import { ChallengeParticipant } from "../ChallengeParticipant/participant.model"
 import { NotificationService } from "../Notification/notification.service";
 import { Follow } from "../Follow/follow.model";
 import { Post } from "../Post/post.model";
+import { PostReaction } from "../PostReaction/reaction.model";
 
 
 const attachChallengeRules = async (challenges: any[]) => {
@@ -288,7 +289,93 @@ const getAllVideoChallenges = async () => {
     path: 'challengeId',
     select: 'challengeName challengePoster',
   }).lean();
-  return videos;
+
+  if (videos.length === 0) {
+    return videos;
+  }
+
+  // Get all postIds
+  const postIds = videos.map((v: any) => v._id);
+
+  // Get all reactions for these posts
+  const reactions = await PostReaction.aggregate([
+    {
+      $match: {
+        postId: { $in: postIds }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          postId: "$postId",
+          reaction: "$reaction"
+        },
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  // Build a map: postId -> reactionsByType
+  const reactionsMap = new Map<string, { heart: number; like: number; sad: number; happy: number; angry: number }>();
+
+  // Initialize reactions map for all posts
+  postIds.forEach((pid: any) => {
+    reactionsMap.set(pid.toString(), {
+      heart: 0,
+      like: 0,
+      sad: 0,
+      happy: 0,
+      angry: 0
+    });
+  });
+
+  // Process reactions
+  reactions.forEach((r: any) => {
+    const postId = r._id.postId.toString();
+    const reactionType = r._id.reaction;
+    const count = r.count;
+
+    const reactionsByType = reactionsMap.get(postId);
+    if (reactionsByType) {
+      switch (reactionType) {
+        case "heart":
+          reactionsByType.heart = count;
+          break;
+        case "like":
+          reactionsByType.like = count;
+          break;
+        case "sad":
+          reactionsByType.sad = count;
+          break;
+        case "happy":
+          reactionsByType.happy = count;
+          break;
+        case "angry":
+          reactionsByType.angry = count;
+          break;
+      }
+    }
+  });
+
+  // Attach reactionCount and reactionsByType to each video
+  return videos.map((video: any) => {
+    const postIdStr = video._id.toString();
+    const reactionsByType = reactionsMap.get(postIdStr) || {
+      heart: 0,
+      like: 0,
+      sad: 0,
+      happy: 0,
+      angry: 0
+    };
+
+    const reactionCount = reactionsByType.heart + reactionsByType.like + reactionsByType.sad + reactionsByType.happy + reactionsByType.angry;
+
+    return {
+      ...video,
+      reactionCount,
+      reactionsByType
+    };
+  });
 };
 
 
