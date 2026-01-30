@@ -4,6 +4,7 @@ import sendResponse from "../../app/utils/sendResponse";
 import status from "http-status";
 import { ChatService } from "./chat.service";
 import { Conversation } from "./conversation.model";
+import { io } from "../../server";
 
 
 const startConversation = catchAsync(async (req: Request, res: Response) => {
@@ -71,7 +72,7 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
     receiverId = toUserId;
   }
 
-   if (!receiverId) {
+  if (!receiverId) {
     const conv = await Conversation.findById(convId).lean();
     if (!conv) {
       return sendResponse(res, {
@@ -88,13 +89,27 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const message = await ChatService.createMessage({
     conversationId: convId,
     senderId: me,
-    receiverId:receiverId!,
+    receiverId: receiverId!,
     text,
     mediaUrl,
   });
 
-  // Note: real-time delivery handled by Socket.IO server (see server.ts),
-  // the socket server will emit to conversation and personal rooms after DB save.
+  // Emit Socket.IO events for real-time delivery
+  if (io) {
+    // Emit to conversation room
+    io.to(`conversation_${convId}`).emit("chat:receive", { conversationId: convId, message });
+
+    // Notify other participant(s) in personal room(s) for push/notification UI
+    const conv = await Conversation.findById(convId).lean();
+    if (conv && conv.participants) {
+      conv.participants.forEach((p: any) => {
+        const pid = p.toString();
+        if (pid !== me) {
+          io.to(`user_${pid}`).emit("notification:new_message", { conversationId: convId, message });
+        }
+      });
+    }
+  }
 
   sendResponse(res, {
     statusCode: status.CREATED,
